@@ -1,11 +1,11 @@
 // src/App.jsx
 import React, { useEffect, useState } from 'react';
-import Landing from './components/Landing.jsx';
-import Auth from './components/Auth.jsx';
-import DirectorDashboard from './components/Dashboard.jsx';
-import TutorDashboard from './components/TutorDashboard.jsx';
-import StudentPortal from './components/StudentPortal.jsx';
-import { apiRequest, clearSession } from './api/client';
+import Landing from './src/components/Landing.jsx';
+import Auth from './src/components/Auth.jsx';
+import DirectorDashboard from './src/components/Dashboard.jsx';
+import TutorDashboard from './src/components/TutorDashboard.jsx';
+import StudentPortal from './src/components/StudentPortal.jsx';
+import { apiRequest, clearSession } from './src/api/client';
 import { CheckCircle, X } from 'lucide-react';
 
 export default function App() {
