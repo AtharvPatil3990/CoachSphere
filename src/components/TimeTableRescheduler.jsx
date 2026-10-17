@@ -1,422 +1,322 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Calendar as CalendarIcon,
-  Clock,
-  Sparkles,
-  Zap,
   AlertTriangle,
+  CalendarDays,
   CheckCircle2,
-  Users,
-  Building2,
+  Clock,
+  FlaskConical,
+  Plus,
   RefreshCw,
-  ArrowRightLeft,
-  ChevronLeft,
-  ChevronRight,
-  ShieldCheck,
-  Video,
-  Laptop,
-  Check,
-  X
+  Video
 } from 'lucide-react';
+import { apiRequest } from '../api/client';
+
+const formatDate = (date) => date.toISOString().slice(0, 10);
+const today = () => formatDate(new Date());
+const nextWeek = () => formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+
+const emptySchedule = {
+  branch_id: '',
+  batch_id: '',
+  trainer_id: '',
+  day_of_week: '1',
+  start_time: '09:00',
+  end_time: '11:00',
+  mode: 'CLASSROOM',
+  room_number: '',
+  meeting_url: '',
+  effective_from: today(),
+  effective_until: ''
+};
+
+const normalizeList = (body) => {
+  if (Array.isArray(body)) return body;
+  return body?.timetable || body?.sessions || body?.schedules || body?.data || [];
+};
+
+const normalizeSession = (session) => ({
+  id: session.id || session.session_id,
+  batch: session.batch_name || session.batch?.name || session.batch || 'Unnamed batch',
+  trainer: session.trainer_name || session.trainer?.name || session.trainer || 'Unassigned',
+  date: session.session_date || session.date || '',
+  startTime: session.start_time || '',
+  endTime: session.end_time || '',
+  room: session.room_number || session.room || 'Room not set',
+  mode: String(session.mode || 'CLASSROOM').toUpperCase(),
+  meetingUrl: session.meeting_url || '',
+  practical: Boolean(session.is_practical || session.session_type === 'PRACTICAL'),
+  practicalHours: Number(session.practical_hours || 0),
+  status: String(session.status || 'ACTIVE').toUpperCase()
+});
 
 export default function TimetableRescheduler({ onShowToast = () => {} }) {
-  // Active viewing day filter
-  const [selectedDay, setSelectedDay] = useState('Tomorrow (Saturday)');
-  const [isSolving, setIsSolving] = useState(false);
-  const [solverResult, setSolverResult] = useState(null);
+  const [branchId, setBranchId] = useState('');
+  const [fromDate, setFromDate] = useState(today);
+  const [toDate, setToDate] = useState(nextWeek);
+  const [sessions, setSessions] = useState([]);
+  const [scheduleForm, setScheduleForm] = useState(emptySchedule);
+  const [rescheduleState, setRescheduleState] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
-  // Facility rooms & schedule slots state
-  const [scheduleData, setScheduleData] = useState([
-    {
-      id: 'slot-1',
-      batch: 'Java Full Stack (JFS-04)',
-      trainer: 'Rajiv Kumar',
-      status: 'normal', // 'normal' | 'conflict' | 'reallocated'
-      room: 'Lab 03 Core (High Spec)',
-      time: '09:00 - 11:30 AM',
-      students: 34,
-      isHybrid: true,
-      conflictNote: ''
-    },
-    {
-      id: 'slot-2',
-      batch: 'DevOps & Cloud (DO-08)',
-      trainer: 'Vikram Mehta',
-      status: 'normal',
-      room: 'Lab 01 (Cloud Cluster)',
-      time: '11:45 - 01:45 PM',
-      students: 28,
-      isHybrid: false,
-      conflictNote: ''
-    },
-    {
-      id: 'slot-3',
-      batch: 'React & Frontend (RF-14)',
-      trainer: 'Priya Sharma',
-      status: 'normal',
-      room: 'Lab 02 (Frontend Bay)',
-      time: '02:00 - 04:30 PM',
-      students: 32,
-      isHybrid: true,
-      conflictNote: ''
-    },
-    {
-      id: 'slot-4',
-      batch: 'Data Science & Python (DS-02)',
-      trainer: 'Amit Deshmukh',
-      status: 'normal',
-      room: 'Lab 03 Core (High Spec)',
-      time: '05:00 - 07:30 PM',
-      students: 25,
-      isHybrid: false,
-      conflictNote: ''
+  const loadTimetable = useCallback(async () => {
+    if (!branchId.trim()) {
+      setError('Enter a branch ID to load its timetable.');
+      return;
     }
-  ]);
 
-  // Simulate an Emergency Sick Leave & trigger the 1.4s Conflict Solver
-  const handleTriggerEmergencySick = () => {
-    setIsSolving(true);
-    setSolverResult(null);
+    setIsLoading(true);
+    setError('');
+    setNotice('');
 
-    // 1. Immediately flag Rajiv Kumar as absent / clashed
-    setScheduleData((prev) =>
-      prev.map((slot) =>
-        slot.trainer === 'Rajiv Kumar'
-          ? {
-              ...slot,
-              status: 'conflict',
-              conflictNote: 'Trainer Rajiv Kumar marked SICK. Unattended cohort in Lab 03!'
-            }
-          : slot
-      )
-    );
-
-    // 2. Simulate 1.4 second constraint solving
-    setTimeout(() => {
-      setIsSolving(false);
-      setSolverResult({
-        timeTaken: '1.38s',
-        overlapsAvoided: 3,
-        substituteAssigned: 'Priya Sharma',
-        loadBalanced: '4.8h total trainer load (within 6.0h daily safe limit)'
-      });
-
-      // Update slot with resolved schedule
-      setScheduleData((prev) =>
-        prev.map((slot) =>
-          slot.trainer === 'Rajiv Kumar'
-            ? {
-                ...slot,
-                trainer: 'Priya Sharma (Substitute)',
-                status: 'reallocated',
-                conflictNote: 'Auto-resolved by EduPulse Solver: Zero room or zoom link overlap.'
-              }
-            : slot
-        )
+    try {
+      const result = await apiRequest(
+        `/api/admin/branches/${encodeURIComponent(branchId.trim())}/timetable?from_date=${encodeURIComponent(fromDate)}&to_date=${encodeURIComponent(toDate)}`
       );
+      setSessions(normalizeList(result).map(normalizeSession));
+    } catch (requestError) {
+      setError(requestError.message || 'Unable to load the branch timetable.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [branchId, fromDate, toDate]);
 
-      onShowToast('Timetable recomputed in 1.4s! 0 overlaps found across 18 active cohorts.');
-    }, 1400);
+  useEffect(() => {
+    if (branchId.trim()) {
+      loadTimetable();
+    }
+  }, [branchId, loadTimetable]);
+
+  const practicalHours = useMemo(
+    () => sessions.reduce((total, session) => total + session.practicalHours, 0),
+    [sessions]
+  );
+
+  const updateScheduleField = (field, value) => {
+    setScheduleForm((current) => ({ ...current, [field]: value }));
   };
 
-  const handleResetSchedule = () => {
-    setSolverResult(null);
-    setScheduleData([
-      {
-        id: 'slot-1',
-        batch: 'Java Full Stack (JFS-04)',
-        trainer: 'Rajiv Kumar',
-        status: 'normal',
-        room: 'Lab 03 Core (High Spec)',
-        time: '09:00 - 11:30 AM',
-        students: 34,
-        isHybrid: true,
-        conflictNote: ''
-      },
-      {
-        id: 'slot-2',
-        batch: 'DevOps & Cloud (DO-08)',
-        trainer: 'Vikram Mehta',
-        status: 'normal',
-        room: 'Lab 01 (Cloud Cluster)',
-        time: '11:45 - 01:45 PM',
-        students: 28,
-        isHybrid: false,
-        conflictNote: ''
-      },
-      {
-        id: 'slot-3',
-        batch: 'React & Frontend (RF-14)',
-        trainer: 'Priya Sharma',
-        status: 'normal',
-        room: 'Lab 02 (Frontend Bay)',
-        time: '02:00 - 04:30 PM',
-        students: 32,
-        isHybrid: true,
-        conflictNote: ''
-      },
-      {
-        id: 'slot-4',
-        batch: 'Data Science & Python (DS-02)',
-        trainer: 'Amit Deshmukh',
-        status: 'normal',
-        room: 'Lab 03 Core (High Spec)',
-        time: '05:00 - 07:30 PM',
-        students: 25,
-        isHybrid: false,
-        conflictNote: ''
-      }
-    ]);
+  const createSchedule = async (event) => {
+    event.preventDefault();
+    setIsCreating(true);
+    setError('');
+    setNotice('');
+
+    const payload = {
+      ...scheduleForm,
+      branch_id: scheduleForm.branch_id.trim(),
+      batch_id: scheduleForm.batch_id.trim(),
+      trainer_id: scheduleForm.trainer_id.trim() || null,
+      room_number: scheduleForm.room_number.trim() || null,
+      meeting_url: scheduleForm.meeting_url.trim() || null,
+      effective_until: scheduleForm.effective_until || null,
+      day_of_week: Number(scheduleForm.day_of_week),
+      start_time: `${scheduleForm.start_time}:00`,
+      end_time: `${scheduleForm.end_time}:00`
+    };
+
+    try {
+      await apiRequest('/api/admin/schedules', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      setBranchId(payload.branch_id);
+      setNotice('Recurring schedule created successfully.');
+      onShowToast('Schedule created successfully.');
+      setScheduleForm((current) => ({ ...emptySchedule, branch_id: current.branch_id }));
+      await loadTimetable();
+    } catch (requestError) {
+      setError(requestError.message || 'Unable to create the schedule.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const rescheduleSession = async (session) => {
+    if (!session.id) {
+      setError('This timetable entry does not include a session ID.');
+      return;
+    }
+
+    const nextDate = window.prompt('New session date (YYYY-MM-DD)', session.date || fromDate);
+    if (!nextDate) return;
+    const startTime = window.prompt('New start time (HH:MM)', session.startTime?.slice(0, 5) || '09:00');
+    if (!startTime) return;
+    const endTime = window.prompt('New end time (HH:MM)', session.endTime?.slice(0, 5) || '11:00');
+    if (!endTime) return;
+    const reason = window.prompt('Reason for rescheduling');
+    if (!reason?.trim()) return;
+
+    setRescheduleState((current) => ({ ...current, [session.id]: 'loading' }));
+    setError('');
+
+    try {
+      await apiRequest(`/api/admin/class-sessions/${encodeURIComponent(session.id)}/reschedule`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          session_date: nextDate,
+          start_time: `${startTime}:00`,
+          end_time: `${endTime}:00`,
+          room_number: session.room === 'Room not set' ? null : session.room,
+          meeting_url: session.meetingUrl || null,
+          reason: reason.trim()
+        })
+      });
+      setRescheduleState((current) => ({ ...current, [session.id]: 'success' }));
+      onShowToast('Class session rescheduled successfully.');
+      await loadTimetable();
+    } catch (requestError) {
+      setRescheduleState((current) => ({ ...current, [session.id]: 'error' }));
+      setError(requestError.message || 'Unable to reschedule the class session.');
+    }
   };
 
   return (
-    <div className="flex flex-col w-full max-w-7xl mx-auto space-y-6">
-      {/* 1. Header & Emergency Solver Trigger Card */}
-      <section className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-            <CalendarIcon className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">1.4s Clash-Free Timetable Re-Planner</h2>
-              <span className="text-[11px] font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
-                Constraint Solver v3.2
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Re-plans instructors, physical lab seats, and Zoom credentials in under 1.4 seconds with zero overlaps.
-            </p>
-          </div>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={handleTriggerEmergencySick}
-            disabled={isSolving}
-            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-75"
-          >
-            {isSolving ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Re-planning (1.4s)...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-3.5 h-3.5 text-amber-300" />
-                <span>Simulate Sick Leave & Auto-Resolve</span>
-              </>
-            )}
-          </button>
-          <button
-            onClick={handleResetSchedule}
-            className="px-3 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors cursor-pointer"
-          >
-            Reset
-          </button>
-        </div>
-      </section>
-
-      {/* 2. Solver Intelligence Feedback Banner (Appears when solver completes) */}
-      {solverResult && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs animate-in fade-in duration-300">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-5 h-5" />
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-indigo-600">
+              <CalendarDays className="h-5 w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-emerald-900">Constraint Solver Succeeded</span>
-                <span className="text-[10px] font-mono font-bold bg-white text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full">
-                  Execution: {solverResult.timeTaken}
-                </span>
-              </div>
-              <p className="text-xs text-emerald-800 mt-0.5">
-                Assigned <strong className="font-bold">{solverResult.substituteAssigned}</strong> • {solverResult.loadBalanced}. Student calendar webhooks staged.
+              <h2 className="text-base font-bold text-slate-900">Daily Schedule Manager</h2>
+              <p className="mt-1 text-xs text-slate-500">
+                Create recurring classes and reschedule individual sessions for a branch.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-emerald-800 bg-white border border-emerald-200 px-3 py-1 rounded-lg">
-              0 Overlaps Found
-            </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              value={branchId}
+              onChange={(event) => setBranchId(event.target.value)}
+              placeholder="Branch ID"
+              className="w-36 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 outline-none focus:border-indigo-400"
+            />
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(event) => setFromDate(event.target.value)}
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-400"
+            />
+            <input
+              type="date"
+              value={toDate}
+              onChange={(event) => setToDate(event.target.value)}
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-400"
+            />
+            <button
+              type="button"
+              onClick={loadTimetable}
+              disabled={isLoading}
+              className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              Load timetable
+            </button>
           </div>
+        </div>
+      </section>
+
+      {error && (
+        <div className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div><p className="font-semibold">Scheduler request failed</p><p className="mt-1 text-xs">{error}</p></div>
+        </div>
+      )}
+      {notice && (
+        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+          <p className="font-semibold">{notice}</p>
         </div>
       )}
 
-      {/* 3. Facility Utilization KPI Blocks */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Lab Seat Capacity</span>
-            <Building2 className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-slate-900">120 / 140</span>
-            <span className="text-xs text-indigo-600 font-semibold">85.7% Occupied</span>
-          </div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
-            <div className="bg-indigo-600 h-full w-[85.7%]" />
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center gap-2 border-b border-slate-100 pb-4">
+          <Plus className="h-4 w-4 text-indigo-600" />
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Create recurring schedule</h3>
+            <p className="mt-1 text-xs text-slate-500">Uses the backend ScheduleCreateRequest schema.</p>
           </div>
         </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Trainer Fatigue Guard</span>
-            <Clock className="w-4 h-4 text-slate-400" />
+        <form className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4" onSubmit={createSchedule}>
+          <Field label="Branch ID" value={scheduleForm.branch_id} onChange={(value) => updateScheduleField('branch_id', value)} required />
+          <Field label="Batch ID" value={scheduleForm.batch_id} onChange={(value) => updateScheduleField('batch_id', value)} required />
+          <Field label="Trainer ID" value={scheduleForm.trainer_id} onChange={(value) => updateScheduleField('trainer_id', value)} />
+          <SelectField label="Day" value={scheduleForm.day_of_week} onChange={(value) => updateScheduleField('day_of_week', value)} options={['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((label, value) => ({ label, value: String(value) }))} />
+          <Field label="Start time" type="time" value={scheduleForm.start_time} onChange={(value) => updateScheduleField('start_time', value)} required />
+          <Field label="End time" type="time" value={scheduleForm.end_time} onChange={(value) => updateScheduleField('end_time', value)} required />
+          <SelectField label="Mode" value={scheduleForm.mode} onChange={(value) => updateScheduleField('mode', value)} options={['CLASSROOM', 'ONLINE', 'HYBRID'].map((label) => ({ label, value: label }))} />
+          <Field label="Room number" value={scheduleForm.room_number} onChange={(value) => updateScheduleField('room_number', value)} />
+          <Field label="Meeting URL" value={scheduleForm.meeting_url} onChange={(value) => updateScheduleField('meeting_url', value)} />
+          <Field label="Effective from" type="date" value={scheduleForm.effective_from} onChange={(value) => updateScheduleField('effective_from', value)} required />
+          <Field label="Effective until" type="date" value={scheduleForm.effective_until} onChange={(value) => updateScheduleField('effective_until', value)} />
+          <div className="flex items-end">
+            <button type="submit" disabled={isCreating} className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-3 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-60">
+              <Plus className="h-4 w-4" /> {isCreating ? 'Creating...' : 'Create schedule'}
+            </button>
           </div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-emerald-600">4.8h Max</span>
-            <span className="text-xs text-slate-500">Cap: 6.0h/day</span>
-          </div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
-            <div className="bg-emerald-500 h-full w-[80%]" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Zoom WebRTC Clusters</span>
-            <Video className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-slate-900">6 Active</span>
-            <span className="text-xs text-emerald-600 font-semibold">Synced</span>
-          </div>
-          <p className="text-[11px] text-slate-400 mt-2">Dual webhook listeners ready</p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Schedule Integrity</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-emerald-600">100%</span>
-            <span className="text-xs text-slate-500">Deterministic</span>
-          </div>
-          <p className="text-[11px] text-slate-400 mt-2">AST Sandbox validated</p>
-        </div>
+        </form>
       </section>
 
-      {/* 4. Interactive Timetable Matrix Grid */}
-      <section className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-        {/* Day Selector & Quick Calendar Strip */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-slate-900">Campus Schedule Grid</span>
-            <span className="text-xs text-slate-400">({selectedDay})</span>
-          </div>
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <MetricCard label="Sessions" value={sessions.length} icon={CalendarDays} />
+        <MetricCard label="Practical hours" value={`${practicalHours}h`} icon={FlaskConical} />
+        <MetricCard label="Date range" value={`${fromDate} → ${toDate}`} icon={Clock} />
+      </section>
 
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-            {['Today (Friday)', 'Tomorrow (Saturday)', 'Monday'].map((day) => (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  selectedDay === day
-                    ? 'bg-white text-indigo-600 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {day}
-              </button>
-            ))}
-          </div>
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-4">
+          <div><h3 className="text-sm font-bold text-slate-900">Branch timetable</h3><p className="mt-1 text-xs text-slate-500">Sessions returned by the backend</p></div>
+          <span className="text-xs font-semibold text-slate-500">{sessions.length} sessions</span>
         </div>
-
-        {/* Timetable Cards Grid */}
-        <div className="space-y-3">
-          {scheduleData.map((slot) => {
-            const isClash = slot.status === 'conflict';
-            const isReallocated = slot.status === 'reallocated';
-
-            return (
-              <div
-                key={slot.id}
-                className={`p-4 rounded-xl border transition-all ${
-                  isClash
-                    ? 'bg-rose-50/70 border-rose-300 shadow-sm'
-                    : isReallocated
-                    ? 'bg-emerald-50/60 border-emerald-300 shadow-xs'
-                    : 'bg-slate-50/60 border-slate-200/80 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  {/* Left: Timing & Batch Info */}
-                  <div className="flex items-start sm:items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center shrink-0 shadow-2xs">
-                      <Clock className="w-4 h-4 text-slate-500" />
+        {isLoading ? <LoadingState /> : sessions.length === 0 ? <p className="py-10 text-center text-xs text-slate-500">Enter a branch ID and load a date range.</p> : (
+          <div className="space-y-3">
+            {sessions.map((session) => (
+              <div key={session.id} className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-bold text-slate-900">{session.batch}</span>
+                      {session.practical && <span className="flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700"><FlaskConical className="h-3 w-3" /> Practical · {session.practicalHours}h</span>}
+                      {(session.mode === 'ONLINE' || session.mode === 'HYBRID') && <Video className="h-3.5 w-3.5 text-indigo-500" />}
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-sm text-slate-900">{slot.batch}</span>
-                        {slot.isHybrid && (
-                          <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md flex items-center gap-1">
-                            <Video className="w-3 h-3" /> Hybrid Stream
-                          </span>
-                        )}
-                        {isClash && (
-                          <span className="text-[10px] font-bold text-rose-700 bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-md flex items-center gap-1 animate-pulse">
-                            <AlertTriangle className="w-3 h-3" /> Instructor Clash
-                          </span>
-                        )}
-                        {isReallocated && (
-                          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-md flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Solver Resolved
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1 flex items-center gap-3 flex-wrap">
-                        <span className="font-semibold text-slate-700">{slot.time}</span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1 text-slate-600">
-                          <Building2 className="w-3.5 h-3.5 text-slate-400" /> {slot.room}
-                        </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1 text-slate-600">
-                          <Users className="w-3.5 h-3.5 text-slate-400" /> {slot.students} Enrolled
-                        </span>
-                      </div>
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+                      <span><CalendarDays className="mr-1 inline h-3.5 w-3.5" />{session.date}</span>
+                      <span><Clock className="mr-1 inline h-3.5 w-3.5" />{session.startTime} - {session.endTime}</span>
+                      <span>{session.room}</span>
                     </div>
                   </div>
-
-                  {/* Right: Assigned Trainer & State */}
-                  <div className="flex items-center gap-4 self-end md:self-auto">
-                    <div className="text-right">
-                      <span className="text-[11px] text-slate-400 block uppercase font-bold tracking-wider">
-                        Assigned Trainer
-                      </span>
-                      <span className={`text-xs font-bold ${isClash ? 'text-rose-600 line-through' : 'text-slate-900'}`}>
-                        {slot.trainer}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => onShowToast(`Slot details opened for ${slot.batch}`)}
-                        className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
-                      >
-                        Adjust Room
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-left md:text-right"><p className="text-[10px] font-bold uppercase text-slate-400">Trainer</p><p className="text-xs font-bold text-slate-900">{session.trainer}</p></div>
+                    <button type="button" onClick={() => rescheduleSession(session)} disabled={rescheduleState[session.id] === 'loading'} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60">
+                      {rescheduleState[session.id] === 'loading' ? 'Saving...' : 'Reschedule'}
+                    </button>
                   </div>
                 </div>
-
-                {/* Subtext warning if conflict exists */}
-                {slot.conflictNote && (
-                  <div className={`mt-2.5 pt-2.5 border-t text-xs font-medium ${
-                    isClash ? 'border-rose-200 text-rose-700' : 'border-emerald-200 text-emerald-800'
-                  }`}>
-                    {slot.conflictNote}
-                  </div>
-                )}
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
+}
+
+function Field({ label, value, onChange, type = 'text', required = false }) {
+  return <label className="flex flex-col gap-1.5 text-xs font-semibold text-slate-700">{label}{required && <span className="text-rose-500">*</span>}<input type={type} value={value} onChange={(event) => onChange(event.target.value)} required={required} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-normal text-slate-800 outline-none focus:border-indigo-400" /></label>;
+}
+
+function SelectField({ label, value, onChange, options }) {
+  return <label className="flex flex-col gap-1.5 text-xs font-semibold text-slate-700">{label}<select value={value} onChange={(event) => onChange(event.target.value)} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-normal text-slate-800 outline-none focus:border-indigo-400">{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>;
+}
+
+function MetricCard({ label, value, icon: Icon }) {
+  return <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-slate-500">{label}</span><Icon className="h-4 w-4 text-indigo-500" /></div><p className="mt-3 truncate text-xl font-bold text-slate-900">{value}</p></div>;
+}
+
+function LoadingState() {
+  return <div className="flex items-center justify-center gap-2 py-10 text-xs text-slate-500"><RefreshCw className="h-4 w-4 animate-spin" /> Loading timetable...</div>;
 }

@@ -139,64 +139,99 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
   };
 
   return (
-    <div className="bg-[radial-gradient(circle_at_top,#eef2ff_0%,#f8f9ff_42%,#f8f9ff_100%)] font-sans text-[#0b1c30] min-h-screen flex flex-col antialiased selection:bg-[#e2dfff] selection:text-[#0f0069]">
+    <div className="bg-slate-50 font-sans text-slate-900 min-h-screen flex flex-col antialiased selection:bg-indigo-200 selection:text-indigo-900 relative overflow-hidden">
+      
+      {/* INJECTED STYLES FOR SMOOTH ANIMATIONS & BLOBS */}
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        @keyframes toastSlide {
+          from { opacity: 0; transform: translateY(10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+        .animate-fade-in-up { animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-toast { animation: toastSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+        
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
+
+      {}
       {/* 1. TOP HEADER */}
-      <header className="fixed top-0 left-0 w-full z-50 bg-[#f8f9ff]/90 backdrop-blur-xl border-b border-[#e5eeff] shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <header className="fixed top-0 left-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-200/50 shadow-sm transition-all duration-300">
         <div className="h-[72px] w-full px-5 sm:px-8 lg:px-12 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <button
               onClick={onNavigateToLanding}
-              className="flex items-center gap-2 text-left focus:outline-none"
+              className="flex items-center gap-2 text-left focus:outline-none group"
             >
-              <div className="w-9 h-9 rounded-xl bg-[#091426] flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-slate-300/40">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-500/30 transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
                 C
               </div>
-              <span className="font-bold text-lg text-[#091426] tracking-tight">
+              <span className="font-bold text-lg text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors duration-300">
                 Coach Spear
               </span>
-              <span className="px-1.5 py-0.5 bg-[#1e293b] text-white text-[10px] font-mono rounded font-bold uppercase">
-                ACADEMY PLATFORM
+              <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-mono rounded font-bold uppercase transition-all duration-300 border border-indigo-100">
+                Platform
               </span>
             </button>
-            <div className="hidden md:flex items-center gap-2 text-[#45474c] text-xs font-medium">
-              <span className="w-1 h-1 rounded-full bg-[#c5c6cd]"></span>
-              <span className="text-[#0b1c30] font-semibold">Secure learning operations</span>
+            <div className="hidden md:flex items-center gap-2 text-slate-500 text-xs font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+              <span>Secure learning operations</span>
             </div>
           </div>
 
+          {}
           <div className="flex items-center gap-4">
-            <nav className="hidden sm:flex items-center gap-1">
+            <nav className="hidden sm:flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
               <button
                 onClick={() => setAuthMode('signin')}
-                className={`px-3 py-1.5 rounded text-xs transition-colors font-semibold ${
+                className={`px-3 py-1.5 rounded-lg text-xs transition-all duration-300 font-semibold ${
                   authMode === 'signin'
-                    ? 'bg-[#e5eeff] text-[#091426]'
-                    : 'text-[#45474c] hover:text-[#0b1c30]'
+                    ? 'bg-white text-indigo-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
                 }`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => setAuthMode('signup')}
-                className={`px-3 py-1.5 rounded text-xs transition-colors font-semibold ${
+                className={`px-3 py-1.5 rounded-lg text-xs transition-all duration-300 font-semibold ${
                   authMode === 'signup'
-                    ? 'bg-[#e5eeff] text-[#091426]'
-                    : 'text-[#45474c] hover:text-[#0b1c30]'
+                    ? 'bg-white text-[#4b41e1] shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
                 }`}
               >
                 Institutional Access
               </button>
             </nav>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#eff4ff] text-[#45474c] hover:text-[#0b1c30] text-xs font-semibold"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:scale-105 active:scale-95 transition-all duration-200 text-xs font-semibold"
               >
                 <Globe className="w-3.5 h-3.5" />
-                <span>EN-US</span>
+                <span>EN</span>
               </button>
-              <div className="w-8 h-8 rounded-full bg-[#091426] flex items-center justify-center text-white">
+              <div className="w-9 h-9 rounded-full bg-slate-100 hover:bg-indigo-100 border border-slate-200 hover:border-indigo-300 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-slate-600 hover:text-indigo-600 shadow-sm cursor-pointer">
                 <User className="w-4 h-4" />
               </div>
             </div>
@@ -204,66 +239,56 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
         </div>
       </header>
 
+      {}
       {/* 2. MAIN CONTAINER */}
-      <main className="w-full pt-[72px] flex-1">
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14 flex-1">
-          {/* Top Telemetry Strip */}
-          <div className="hidden">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#00301e] text-[#4edea3] font-mono text-[11px] font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#6ffbbe] animate-ping"></span>
-                AUTH-GATEWAY: READY
-              </span>
-              <span className="text-[#45474c] text-xs hidden sm:inline">
-                Tenant Cluster: us-east-sovereign-04
-              </span>
-              <span className="text-[#c5c6cd] hidden sm:inline">•</span>
-              <span className="text-[#45474c] font-mono text-xs">SHA-256 AST Shield Active</span>
-            </div>
+      <main className="w-full pt-[72px] flex-1 relative z-10 flex flex-col justify-center min-h-screen">
+        
+        {/* VIBRANT ANIMATED BACKGROUND BLOBS */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-300/40 rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-blob"></div>
+          <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-fuchsia-300/40 rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-blob animation-delay-2000"></div>
+          <div className="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-blue-300/40 rounded-full mix-blend-multiply filter blur-[120px] opacity-70 animate-blob animation-delay-4000"></div>
+        </div>
 
-            <div className="flex items-center gap-4 text-[#45474c] text-xs">
-              <span className="flex items-center gap-1 text-[#00a472] font-semibold">
-                <Lock className="w-3.5 h-3.5" /> Zero Data Mutation Gate
-              </span>
-              <span className="hidden md:inline font-mono">Latency: 14ms</span>
-            </div>
-          </div>
-
-          <div className="flex justify-center">
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14 flex-1 flex items-center relative z-10">
+          <div className="flex justify-center w-full">
             
-            {/* LEFT 7 COLS: Dual-Mode Auth Workspace */}
-            <div className="w-full max-w-2xl flex flex-col gap-6">
-              <div className="bg-white/95 rounded-3xl p-6 sm:p-8 md:p-10 shadow-[0_24px_70px_rgba(44,54,100,0.12)] border border-white relative overflow-hidden">
-                <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#e2dfff]/30 rounded-full blur-3xl pointer-events-none"></div>
-
+            {}
+            {/* Dual-Mode Auth Workspace */}
+            <div className="w-full max-w-[560px] flex flex-col gap-6 animate-fade-in-up">
+              
+              {/* Glassmorphic Form Container */}
+              <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white relative overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_rgba(79,70,229,0.1)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/60 before:to-transparent before:pointer-events-none">
+                
                 {/* Form Header & Switcher */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-9 relative z-10">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="px-2 py-0.5 rounded bg-[#1e293b] text-white font-mono text-[10px] font-bold">
-                        COACH SPHERE
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 relative z-10">
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`p-1.5 rounded-lg shadow-sm border ${authMode === 'signin' ? 'bg-indigo-100 text-indigo-600 border-indigo-200/50' : 'bg-[#eff4ff] text-[#4b41e1] border-[#e5eeff]'}`}>
+                        {authMode === 'signin' ? <Lock className="w-4 h-4" /> : <Rocket className="w-4 h-4" />}
                       </span>
-                      <span className="text-[#4b41e1] text-xs uppercase tracking-wider font-bold">
-                        Secure access
+                      <span className={`${authMode === 'signin' ? 'text-indigo-600' : 'text-[#4b41e1]'} text-xs uppercase tracking-wider font-bold`}>
+                        {authMode === 'signin' ? 'Secure Access' : 'Enterprise Setup'}
                       </span>
                     </div>
-                    <p className="mt-3 max-w-md text-sm leading-6 text-slate-500">
-                      Sign in to manage your academy, or create a new workspace for your team.
-                    </p>
-                    <h2 className="mt-4 text-3xl font-bold tracking-tight text-[#091426]">
-                      {authMode === 'signin' ? 'Welcome back' : 'Create your academy'}
+                    <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 transition-all duration-300">
+                      {authMode === 'signin' ? 'Welcome back' : 'Create Academy'}
                     </h2>
+                    <p className="mt-2 text-sm text-slate-500 font-medium">
+                      {authMode === 'signin' ? 'Enter your credentials to access your workspace.' : 'Provision a new sovereign workspace for your team.'}
+                    </p>
                   </div>
 
+                  {}
                   {/* Silky Mode Switcher */}
-                  <div className="inline-flex p-1.5 bg-slate-100 rounded-xl relative self-start sm:self-auto">
+                  <div className="inline-flex p-1.5 bg-slate-100/80 rounded-xl relative self-start sm:self-auto shadow-inner border border-slate-200/50 backdrop-blur-sm">
                     <button
                       type="button"
                       onClick={() => setAuthMode('signin')}
-                      className={`relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`relative z-10 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ease-out flex-1 sm:flex-none text-center ${
                         authMode === 'signin'
-                          ? 'bg-white text-[#091426] shadow-sm ring-1 ring-slate-200'
-                          : 'text-[#45474c] hover:text-[#0b1c30]'
+                          ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50 scale-100'
+                          : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 scale-95'
                       }`}
                     >
                       Sign In
@@ -271,485 +296,347 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                     <button
                       type="button"
                       onClick={() => setAuthMode('signup')}
-                      className={`relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`relative z-10 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ease-out flex-1 sm:flex-none text-center ${
                         authMode === 'signup'
-                          ? 'bg-white text-[#091426] shadow-sm ring-1 ring-slate-200'
-                          : 'text-[#45474c] hover:text-[#0b1c30]'
+                          ? 'bg-white text-[#4b41e1] shadow-sm ring-1 ring-slate-200/50 scale-100'
+                          : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 scale-95'
                       }`}
                     >
-                      Create Academy
+                      Sign Up
                     </button>
                   </div>
                 </div>
 
-                {/* MODE 1: SIGN IN */}
-                {authMode === 'signin' ? (
-                  <div className="flex flex-col space-y-6">
-                    <form className="space-y-6 pt-1" onSubmit={handleSignInSubmit}>
-                      {/* Work Email */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-bold text-[#091426]">Institutional Work Email</label>
-                          <div className="hidden sm:flex items-center gap-1">
-                            <span className="text-[#45474c] text-[10px] uppercase font-bold">Quick-fill:</span>
+                {/* ANIMATED FORM CONTAINER (Uses key to re-trigger animations on switch) */}
+                <div key={authMode} className="animate-fade-in-up relative z-10" style={{ animationDelay: '0.15s' }}>
+                  
+                  {}
+                  {/* MODE 1: SIGN IN */}
+                  {authMode === 'signin' ? (
+                    <div className="flex flex-col space-y-6">
+                      <form className="space-y-5" onSubmit={handleSignInSubmit}>
+                        
+                        {/* Work Email */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-700">Work Email</label>
+                            <div className="hidden sm:flex items-center gap-1.5">
+                              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Quick fill:</span>
+                              <button
+                                type="button"
+                                onClick={() => handleDomainQuickFill('@techsummittrainers.com')}
+                                className="px-2 py-1 rounded bg-indigo-50/80 text-indigo-600 font-mono text-[10px] hover:bg-indigo-100 hover:scale-105 active:scale-95 transition-all duration-200 border border-indigo-100/50"
+                              >
+                                @techsummit...
+                              </button>
+                            </div>
+                          </div>
+                          <div className="relative flex items-center group">
+                            <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 absolute left-3 pointer-events-none transition-colors duration-300" />
+                            <input
+                              className="w-full bg-white/50 border border-slate-200 rounded-xl pl-10 pr-3 py-3 text-sm text-slate-900 hover:border-slate-300 hover:bg-white focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none transition-all duration-300 placeholder:text-slate-400 shadow-sm"
+                              type="email"
+                              value={workEmail}
+                              onChange={(e) => setWorkEmail(e.target.value)}
+                              placeholder="name@organization.edu"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        {/* Password */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-700">Password</label>
+                            <a href="#reset" className="text-indigo-600 hover:text-indigo-700 hover:underline text-xs font-semibold transition-colors duration-200">
+                              Forgot password?
+                            </a>
+                          </div>
+                          <div className="relative flex items-center group">
+                            <Key className="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 absolute left-3 pointer-events-none transition-colors duration-300" />
+                            <input
+                              className="w-full bg-white/50 border border-slate-200 rounded-xl pl-10 pr-10 py-3 text-sm font-mono text-slate-900 hover:border-slate-300 hover:bg-white focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none transition-all duration-300 placeholder:text-slate-400 shadow-sm"
+                              type={showPassword ? 'text' : 'password'}
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="••••••••••••••••"
+                              required
+                            />
                             <button
                               type="button"
-                              onClick={() => handleDomainQuickFill('@techsummittrainers.com')}
-                              className="px-2 py-1 rounded-lg bg-[#e5eeff] text-[#091426] font-mono text-[10px] hover:bg-[#dce9ff] transition-colors"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 p-1 rounded-md text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all duration-200"
                             >
-                              @techsummittrainers.com
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDomainQuickFill('@academy.edu')}
-                              className="px-2 py-1 rounded-lg bg-[#e5eeff] text-[#091426] font-mono text-[10px] hover:bg-[#dce9ff] transition-colors"
-                            >
-                              @academy.edu
+                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                           </div>
                         </div>
-                        <div className="relative flex items-center">
-                          <Mail className="w-4 h-4 text-[#45474c] absolute left-3 pointer-events-none" />
-                          <input
-                            className="w-full bg-[#f8faff] border border-[#dfe6f3] rounded-xl pl-10 pr-3 py-3 text-sm text-[#091426] focus:bg-white focus:shadow-sm focus:border-[#4b41e1] focus:outline-none transition-all placeholder:text-[#9aa3b5]"
-                            type="email"
-                            value={workEmail}
-                            onChange={(e) => setWorkEmail(e.target.value)}
-                            placeholder="name@organization.edu"
-                            required
-                          />
-                        </div>
-                      </div>
 
-                      {/* Password */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-bold text-[#091426]">Master Passphrase / Token</label>
-                          <a href="#reset" className="text-[#4b41e1] hover:underline text-xs font-semibold">
-                            Reset credentials?
-                          </a>
+                        {/* Primary Sign In Button */}
+                        <button
+                          type="submit"
+                          disabled={isLoading}
+                          className="w-full flex items-center justify-center gap-2 py-3.5 mt-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] focus:ring-4 focus:ring-indigo-500/20 transition-all duration-300 shadow-[0_8px_20px_-6px_rgba(79,70,229,0.5)] hover:shadow-[0_12px_24px_-6px_rgba(79,70,229,0.6)] text-sm font-bold group disabled:opacity-75 disabled:pointer-events-none cursor-pointer overflow-hidden relative"
+                        >
+                          {/* Button shine effect */}
+                          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
+                          
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin text-white" />
+                              <span>Authenticating...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Sign in to Workspace</span>
+                              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    /* MODE 2: CREATE ACADEMY (SIGN UP) */
+                    <div className="flex flex-col space-y-6">
+                      
+                      {/* Promotional Banner (Restored to original colors) */}
+                      <div className="bg-gradient-to-r from-[#eff4ff] to-white rounded-xl p-3.5 flex items-center justify-between border border-[#e5eeff] shadow-sm transform transition-all hover:scale-[1.01]">
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4b41e1] opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#4b41e1]"></span>
+                          </div>
+                          <span className="text-xs font-bold text-slate-800">
+                            14-Day Enterprise Sandbox
+                          </span>
                         </div>
-                        <div className="relative flex items-center">
-                          <Key className="w-4 h-4 text-[#45474c] absolute left-3 pointer-events-none" />
-                          <input
-                            className="w-full bg-[#f8faff] border border-[#dfe6f3] rounded-xl pl-10 pr-10 py-3 text-sm font-mono text-[#091426] focus:bg-white focus:shadow-sm focus:border-[#4b41e1] focus:outline-none transition-all placeholder:text-[#9aa3b5]"
-                            type={showPassword ? 'text' : 'password'}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••••••••••"
-                            required
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 text-[#45474c] hover:text-[#091426]"
-                          >
-                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Primary Sign In Button */}
-                      <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#091426] text-white hover:bg-[#1e293b] transition-all shadow-lg shadow-slate-300/40 text-sm font-bold group disabled:opacity-75 cursor-pointer"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin text-[#4edea3]" />
-                            <span>Authenticating Handshake...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="w-4 h-4 text-[#4edea3]" />
-                            <span>Sign in to Coach Sphere</span>
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </>
-                        )}
-                      </button>
-                    </form>
-
-                  </div>
-                ) : (
-                  /* MODE 2: CREATE ACADEMY (SIGN UP) */
-                  <div className="flex flex-col space-y-7">
-                    <div className="bg-[#eff4ff] rounded-xl p-3 flex items-center justify-between border border-[#e5eeff]">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#4b41e1]"></span>
-                        <span className="text-xs font-bold text-[#091426]">
-                          14-Day Full Capability Enterprise Sandbox
+                        <span className="font-mono text-[10px] text-[#4b41e1] bg-[#e2dfff] px-2 py-1 rounded font-bold shadow-sm border border-[#e5eeff]">
+                          NO CARD REQUIRED
                         </span>
                       </div>
-                      <span className="font-mono text-[10px] text-[#4b41e1] bg-[#e2dfff] px-2 py-0.5 rounded font-bold">
-                        NO CARD REQUIRED
-                      </span>
-                    </div>
 
-                    <form className="space-y-6" onSubmit={handleSignUpSubmit}>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-[#091426]">Institute / Academy Name</label>
-                          <input
-                            className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
-                            placeholder="e.g. Apex Tech Institute"
-                            value={academyName}
-                            onChange={(e) => handleAcademyNameChange(e.target.value)}
-                            required
-                            type="text"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-[#091426]">Desired Workspace Pod</label>
-                          <div className="flex items-center bg-[#eff4ff] border border-[#e5eeff] rounded-lg p-0.5 focus-within:bg-white">
+                      <form className="space-y-5" onSubmit={handleSignUpSubmit}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-2 group">
+                            <label className="text-xs font-bold text-slate-700 group-focus-within:text-[#4b41e1] transition-colors">Academy Name</label>
                             <input
-                              className="w-full bg-transparent px-2.5 py-1.5 font-mono text-xs text-[#091426] focus:outline-none"
-                              placeholder="apextech"
-                              value={desiredSubdomain}
-                              onChange={(e) => setDesiredSubdomain(e.target.value)}
+                              className="w-full bg-white/50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 hover:border-slate-300 hover:bg-white focus:bg-white focus:border-[#4b41e1] focus:ring-4 focus:ring-[#4b41e1]/10 focus:outline-none transition-all duration-300 placeholder:text-slate-400 shadow-sm"
+                              placeholder="e.g. Apex Tech"
+                              value={academyName}
+                              onChange={(e) => handleAcademyNameChange(e.target.value)}
                               required
                               type="text"
                             />
-                            <span className="text-[#45474c] font-mono text-xs pr-2 select-none">.edupulse.ai</span>
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-[#091426]">Administrator Legal Name</label>
-                          <input
-                            className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
-                            placeholder="Dr. Rajesh Mehra"
-                            value={adminName}
-                            onChange={(e) => setAdminName(e.target.value)}
-                            required
-                            type="text"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-[#091426]">Clearance Tier</label>
-                          <select
-                            value={adminTier}
-                            onChange={(e) => setAdminTier(e.target.value)}
-                            className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
-                          >
-                            <option value="director">Director / Managing Trustee (Level 0)</option>
-                            <option value="dean">Academic Dean / Vice Chancellor</option>
-                            <option value="coo">Chief Operations Officer</option>
-                            <option value="head_trainer">Lead Trainer Coordinator</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-[#091426]">Enterprise Work Email</label>
-                          <input
-                            className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
-                            placeholder="dean@apextech.ac.in"
-                            value={adminEmail}
-                            onChange={(e) => setAdminEmail(e.target.value)}
-                            required
-                            type="email"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-[#091426]">Emergency Phone</label>
-                            <span className="inline-flex items-center gap-1 text-[10px] text-[#00a472] font-semibold">
-                              <MessageSquare className="w-3 h-3" /> WhatsApp 2FA
-                            </span>
-                          </div>
-                          <input
-                            className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
-                            placeholder="+91 98450 12345"
-                            value={adminPhone}
-                            onChange={(e) => setAdminPhone(e.target.value)}
-                            required
-                            type="tel"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-[#091426]">Administrator Password</label>
-                        <input
-                          className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 font-mono text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
-                          type="password"
-                          value={signupPassword}
-                          onChange={(e) => setSignupPassword(e.target.value)}
-                          placeholder="Create a secure password"
-                          minLength={8}
-                          required
-                        />
-                      </div>
-
-                      {/* Scale Tier Radio Cards */}
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold text-[#091426]">
-                          Operational Scale Tier (Simultaneous Active Students)
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          {[
-                            { id: 'tier1', range: '1 - 500', desc: 'Single Campus / 10 Labs' },
-                            { id: 'tier2', range: '500 - 3,500', desc: 'Multi-Branch Hub' },
-                            { id: 'tier3', range: '3,500+', desc: 'Autonomous Sovereign' }
-                          ].map((t) => (
-                            <label
-                              key={t.id}
-                              className={`flex flex-col p-2.5 rounded-lg border cursor-pointer transition-all ${
-                                scaleTier === t.id
-                                  ? 'bg-[#e5eeff] border-[#4b41e1] shadow-sm'
-                                  : 'bg-[#eff4ff] border-transparent hover:bg-[#e5eeff]'
-                              }`}
-                            >
+                          <div className="space-y-2 group">
+                            <label className="text-xs font-bold text-slate-700 group-focus-within:text-[#4b41e1] transition-colors">Workspace Domain</label>
+                            <div className="flex items-center bg-white/50 border border-slate-200 rounded-xl p-1 hover:border-slate-300 hover:bg-white focus-within:bg-white focus-within:border-[#4b41e1] focus-within:ring-4 focus-within:ring-[#4b41e1]/10 transition-all duration-300 shadow-sm">
                               <input
-                                type="radio"
-                                name="scale_tier"
-                                value={t.id}
-                                checked={scaleTier === t.id}
-                                onChange={() => setScaleTier(t.id)}
-                                className="sr-only"
+                                className="w-full bg-transparent pl-2.5 py-2 font-mono text-sm text-slate-900 focus:outline-none placeholder:text-slate-300"
+                                placeholder="apex"
+                                value={desiredSubdomain}
+                                onChange={(e) => setDesiredSubdomain(e.target.value)}
+                                required
+                                type="text"
                               />
-                              <span className="font-bold text-sm text-[#091426]">{t.range}</span>
-                              <span className="text-[11px] text-[#45474c] mt-0.5">{t.desc}</span>
-                            </label>
-                          ))}
+                              <span className="text-slate-400 font-mono text-xs pr-3 select-none bg-slate-50 py-1 px-2 rounded-lg border border-slate-100">.coachsphere.ai</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Security Attestation */}
-                      <div className="p-4 rounded-2xl bg-[#f5f7ff] border border-[#e1e7f5]">
-                        <label className="flex items-start gap-2.5 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={attestation}
-                            onChange={(e) => setAttestation(e.target.checked)}
-                            required
-                            className="mt-0.5 w-4 h-4 rounded text-[#4b41e1] accent-[#4b41e1] cursor-pointer"
-                          />
-                          <span className="text-xs text-[#091426] leading-relaxed">
-                            I attest authority to bind this institution. All queries execute strictly through the{' '}
-                            <strong>Zero-Mutation AST Sandbox</strong> with DPDP & FERPA data anonymization enforced.
-                          </span>
-                        </label>
-                      </div>
+                        {}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-2 group">
+                            <label className="text-xs font-bold text-slate-700 group-focus-within:text-[#4b41e1] transition-colors">Admin Name</label>
+                            <input
+                              className="w-full bg-white/50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 hover:border-slate-300 hover:bg-white focus:bg-white focus:border-[#4b41e1] focus:ring-4 focus:ring-[#4b41e1]/10 focus:outline-none transition-all duration-300 placeholder:text-slate-400 shadow-sm"
+                              placeholder="Full Name"
+                              value={adminName}
+                              onChange={(e) => setAdminName(e.target.value)}
+                              required
+                              type="text"
+                            />
+                          </div>
+                          <div className="space-y-2 group">
+                            <label className="text-xs font-bold text-slate-700 group-focus-within:text-[#4b41e1] transition-colors">Role / Tier</label>
+                            <select
+                              value={adminTier}
+                              onChange={(e) => setAdminTier(e.target.value)}
+                              className="w-full bg-white/50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 hover:border-slate-300 hover:bg-white focus:bg-white focus:border-[#4b41e1] focus:ring-4 focus:ring-[#4b41e1]/10 focus:outline-none transition-all duration-300 shadow-sm cursor-pointer appearance-none"
+                            >
+                              <option value="director">Director / Managing Trustee</option>
+                              <option value="dean">Academic Dean</option>
+                              <option value="coo">Chief Operations Officer</option>
+                              <option value="head_trainer">Lead Trainer</option>
+                            </select>
+                          </div>
+                        </div>
 
-                      {/* Provision Submit */}
-                      <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#4b41e1] text-white hover:bg-[#645efb] transition-all shadow-lg shadow-indigo-200/50 text-sm font-bold group disabled:opacity-75 cursor-pointer"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin text-white" />
-                            <span>Configuring Workspace Pod...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Rocket className="w-4 h-4 text-white" />
-                            <span>Provision 14-Day Pilot Academy Workspace</span>
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </>
-                        )}
-                      </button>
-                    </form>
-                  </div>
-                )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-2 group">
+                            <label className="text-xs font-bold text-slate-700 group-focus-within:text-[#4b41e1] transition-colors">Work Email</label>
+                            <input
+                              className="w-full bg-white/50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 hover:border-slate-300 hover:bg-white focus:bg-white focus:border-[#4b41e1] focus:ring-4 focus:ring-[#4b41e1]/10 focus:outline-none transition-all duration-300 placeholder:text-slate-400 shadow-sm"
+                              placeholder="admin@academy.edu"
+                              value={adminEmail}
+                              onChange={(e) => setAdminEmail(e.target.value)}
+                              required
+                              type="email"
+                            />
+                          </div>
+                          <div className="space-y-2 group">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-bold text-slate-700 group-focus-within:text-[#4b41e1] transition-colors">Phone Number</label>
+                            </div>
+                            <input
+                              className="w-full bg-white/50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 hover:border-slate-300 hover:bg-white focus:bg-white focus:border-[#4b41e1] focus:ring-4 focus:ring-[#4b41e1]/10 focus:outline-none transition-all duration-300 placeholder:text-slate-400 shadow-sm"
+                              placeholder="+1 (555) 000-0000"
+                              value={adminPhone}
+                              onChange={(e) => setAdminPhone(e.target.value)}
+                              required
+                              type="tel"
+                            />
+                          </div>
+                        </div>
 
+                        <div className="space-y-2 group">
+                          <label className="text-xs font-bold text-slate-700 group-focus-within:text-[#4b41e1] transition-colors">Secure Password</label>
+                          <div className="relative flex items-center">
+                             <Key className="w-5 h-5 text-slate-400 group-focus-within:text-[#4b41e1] absolute left-3 pointer-events-none transition-colors duration-300" />
+                            <input
+                              className="w-full bg-white/50 border border-slate-200 rounded-xl pl-10 pr-3 py-3 font-mono text-sm text-slate-900 hover:border-slate-300 hover:bg-white focus:bg-white focus:border-[#4b41e1] focus:ring-4 focus:ring-[#4b41e1]/10 focus:outline-none transition-all duration-300 shadow-sm"
+                              type="password"
+                              value={signupPassword}
+                              onChange={(e) => setSignupPassword(e.target.value)}
+                              placeholder="Min 8 characters"
+                              minLength={8}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        {}
+                        {/* Scale Tier Radio Cards */}
+                        <div className="space-y-3 pt-2">
+                          <label className="text-xs font-bold text-slate-700">
+                            Expected User Scale (Active Students)
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {[
+                              { id: 'tier1', range: '1 - 500', desc: 'Single Campus' },
+                              { id: 'tier2', range: '500 - 3.5k', desc: 'Multi-Branch' },
+                              { id: 'tier3', range: '3,500+', desc: 'Enterprise' }
+                            ].map((t) => (
+                              <label
+                                key={t.id}
+                                className={`flex flex-col p-3.5 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 ${
+                                  scaleTier === t.id
+                                    ? 'bg-gradient-to-br from-[#eff4ff] to-white border-[#4b41e1] shadow-md ring-2 ring-[#4b41e1]/20'
+                                    : 'bg-white border-slate-100 hover:border-[#4b41e1]/50 shadow-sm'
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="scale_tier"
+                                  value={t.id}
+                                  checked={scaleTier === t.id}
+                                  onChange={() => setScaleTier(t.id)}
+                                  className="sr-only"
+                                />
+                                <span className={`font-bold text-sm transition-colors duration-300 ${scaleTier === t.id ? 'text-[#4b41e1]' : 'text-slate-800'}`}>{t.range}</span>
+                                <span className="text-[11px] text-slate-500 mt-1">{t.desc}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Security Attestation */}
+                        <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/60 transition-all duration-300 hover:bg-slate-50">
+                          <label className="flex items-start gap-3 cursor-pointer select-none group">
+                            <input
+                              type="checkbox"
+                              checked={attestation}
+                              onChange={(e) => setAttestation(e.target.checked)}
+                              required
+                              className="mt-0.5 w-4 h-4 rounded text-[#4b41e1] border-slate-300 focus:ring-[#4b41e1] accent-[#4b41e1] cursor-pointer transition-transform duration-200"
+                            />
+                            <span className="text-xs text-slate-600 leading-relaxed group-hover:text-slate-900 transition-colors">
+                              I attest authority to bind this institution. I agree to the{' '}
+                              <a href="#terms" className="text-[#4b41e1] font-semibold hover:underline">Terms of Service</a> and{' '}
+                              <a href="#privacy" className="text-[#4b41e1] font-semibold hover:underline">Privacy Policy</a>.
+                            </span>
+                          </label>
+                        </div>
+
+                        {}
+                        {/* Provision Submit */}
+                        <button
+                          type="submit"
+                          disabled={isLoading}
+                          className="w-full flex items-center justify-center gap-2 py-3.5 mt-2 rounded-xl bg-[#4b41e1] text-white hover:bg-[#645efb] active:scale-[0.98] focus:ring-4 focus:ring-[#4b41e1]/20 transition-all duration-300 shadow-[0_8px_20px_-6px_rgba(75,65,225,0.5)] hover:shadow-[0_12px_24px_-6px_rgba(75,65,225,0.6)] text-sm font-bold group disabled:opacity-75 disabled:pointer-events-none cursor-pointer relative overflow-hidden"
+                        >
+                          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin text-white" />
+                              <span>Provisioning Workspace...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Rocket className="w-5 h-5 text-indigo-100 group-hover:text-white transition-colors duration-300" />
+                              <span>Create Academy Workspace</span>
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </div>
+
+                {}
                 {/* Live Dynamic Status Toast */}
                 {statusToast.show && (
-                  <div className="mt-4 p-3 rounded-xl bg-[#eff4ff] border border-[#dce9ff] flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-[#091426]">
+                  <div className="mt-6 p-4 rounded-xl bg-white border border-slate-200 flex items-center justify-between animate-toast shadow-lg shadow-slate-200/50">
+                    <div className="flex items-center gap-3 text-sm text-slate-800 font-medium">
                       {statusToast.isLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-[#4b41e1]" />
+                        <Loader2 className="w-5 h-5 animate-spin text-[#4b41e1]" />
                       ) : statusToast.isSuccess ? (
-                        <CheckCircle className="w-4 h-4 text-[#00a472]" />
+                        <CheckCircle className="w-5 h-5 text-emerald-500" />
                       ) : (
-                        <AlertCircle className="w-4 h-4 text-[#ba1a1a]" />
+                        <AlertCircle className="w-5 h-5 text-rose-500" />
                       )}
                       <span>{statusToast.message}</span>
                     </div>
-                    <span className="font-mono text-[10px] text-[#45474c]">TLS 1.3</span>
                   </div>
                 )}
               </div>
-
-              {/* Compliance Trust Micro-Bar */}
-              <div className="hidden">
-                {[
-                  { icon: ShieldCheck, title: 'SOC-2 Type II', sub: 'Continuous Audit' },
-                  { icon: EyeOff, title: 'Fee Blindness', sub: 'Trainer Partition' },
-                  { icon: Terminal, title: 'Dedicated Pods', sub: 'Zero Multi-Tenancy' },
-                  { icon: Sparkles, title: '1.4s Dispatch', sub: 'Conflict Solver' }
-                ].map((item, i) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={i} className="flex items-center gap-2 p-3 bg-white rounded-xl shadow-sm border border-[#e5eeff]">
-                      <Icon className="w-4 h-4 text-[#4b41e1] shrink-0" />
-                      <div className="flex flex-col">
-                        <span className="text-[11px] font-bold text-[#091426] leading-tight">{item.title}</span>
-                        <span className="font-mono text-[10px] text-[#45474c]">{item.sub}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Institutional security showcase is intentionally omitted from the focused auth screen. */}
-            <div className="hidden">
-              {/* Operations Stat Ticker */}
-              <div className="bg-[#091426] text-white rounded-2xl p-4 shadow-md flex items-center justify-between border border-[#1e293b]">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#4edea3] animate-ping"></span>
-                  <span className="font-mono text-xs uppercase tracking-wider text-[#bcc7de] font-bold">
-                    Live Academic Operations Network
-                  </span>
-                </div>
-                <span className="font-mono text-xs text-[#4edea3] bg-[#1e293b] px-2 py-0.5 rounded font-bold">
-                  99.8% SYNC
-                </span>
-              </div>
-
-              {/* Metric Pulse Bento Grid */}
-              <div className="grid grid-cols-3 gap-2.5">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-[#e5eeff] flex flex-col">
-                  <span className="font-mono text-[10px] font-bold text-[#45474c]">INSTITUTES</span>
-                  <span className="font-extrabold text-2xl text-[#091426] mt-0.5">120+</span>
-                  <span className="text-[10px] text-[#00a472] font-semibold mt-1">Multi-campus hubs</span>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-[#e5eeff] flex flex-col">
-                  <span className="font-mono text-[10px] font-bold text-[#45474c]">ENROLLED</span>
-                  <span className="font-extrabold text-2xl text-[#4b41e1] mt-0.5">45.2k</span>
-                  <span className="text-[10px] text-[#45474c] font-semibold mt-1">Students tracked</span>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-[#e5eeff] flex flex-col">
-                  <span className="font-mono text-[10px] font-bold text-[#45474c]">SPEED</span>
-                  <span className="font-extrabold text-2xl text-[#00a472] mt-0.5">1.4s</span>
-                  <span className="text-[10px] text-[#45474c] font-semibold mt-1">Avg clash repair</span>
-                </div>
-              </div>
-
-              {/* Flagship Testimonial Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-md border border-[#e5eeff] space-y-4 relative overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-[#4b41e1]" />
-                    <span className="text-xs font-bold text-[#091426]">Flagship Implementation</span>
-                  </div>
-                  <span className="font-mono text-[10px] font-bold text-[#45474c] bg-[#eff4ff] px-2 py-0.5 rounded">
-                    CASE STUDY #84
-                  </span>
-                </div>
-
-                <blockquote className="text-sm text-[#091426] italic leading-relaxed">
-                  “Before Coach Sphere, a trainer calling sick on Monday morning caused hours of timetable panic. Now, our operations platform helps teams coordinate schedules without human stress.”
-                </blockquote>
-
-                <div className="flex items-center gap-3 pt-2 border-t border-[#f0f4ff]">
-                  <div className="w-10 h-10 rounded-full bg-[#e2dfff] flex items-center justify-center font-bold text-[#4b41e1] text-xs shrink-0">
-                    AS
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-xs text-[#091426]">Ananya Sharma</span>
-                    <span className="text-[11px] text-[#45474c]">Operations Director, Coach Sphere</span>
-                    <span className="font-mono text-[10px] text-[#4b41e1] font-semibold">8 Campuses • 4,200 Active Trainees</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Three Pillars of Security */}
-              <div className="bg-white rounded-2xl p-6 shadow-md border border-[#e5eeff] space-y-3">
-                <h3 className="font-bold text-sm text-[#091426] flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#4b41e1]" />
-                  Zero-Trust Academic Governance
-                </h3>
-
-                <div className="space-y-2">
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-[#eff4ff]">
-                    <div className="p-1.5 rounded-lg bg-white text-[#4b41e1] shadow-sm shrink-0">
-                      <EyeOff className="w-4 h-4" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-[#091426]">Role-Based Fee Blindness</span>
-                      <span className="text-[11px] text-[#45474c] leading-relaxed mt-0.5">
-                        Trainers and coordinators cannot view fee collection tables, EMI default states, or bursar ledgers.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-[#eff4ff]">
-                    <div className="p-1.5 rounded-lg bg-white text-[#00a472] shadow-sm shrink-0">
-                      <Terminal className="w-4 h-4" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-[#091426]">Zero-Mutation AST SQL Sandbox</span>
-                      <span className="text-[11px] text-[#45474c] leading-relaxed mt-0.5">
-                        AI suggestions compile into read-only AST parse trees. System tables can never be mutated by prompts.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-[#eff4ff]">
-                    <div className="p-1.5 rounded-lg bg-white text-[#ba1a1a] shadow-sm shrink-0">
-                      <Radio className="w-4 h-4" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-[#091426]">1-Click WhatsApp Gatekeeper</span>
-                      <span className="text-[11px] text-[#45474c] leading-relaxed mt-0.5">
-                        Batch cancellations or faculty changes require instant two-way SMS/WhatsApp approval from the head.
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* AST Live Trace */}
-                <div className="rounded-xl bg-[#091426] text-white p-3 space-y-1 font-mono text-[11px] border border-[#1e293b]">
-                  <div className="flex items-center justify-between text-[#8590a6]">
-                    <span>AST_INSPECT_PARSER // LIVE TRACE</span>
-                    <span className="text-[#4edea3] font-bold">SAFE (READ_ONLY)</span>
-                  </div>
-                  <p className="text-[#c3c0ff] truncate font-mono text-xs">
-                    SELECT batch_id, room_code, trainer_id FROM timetable WHERE day = CURRENT_DATE
-                  </p>
-                  <div className="flex items-center justify-between pt-1 text-[#8590a6] text-[10px]">
-                    <span>Cost: 0.002ms</span>
-                    <span>Sanitization: 100% Deterministic</span>
-                  </div>
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
       </main>
 
+      {}
       {/* 3. FOOTER */}
-      <footer className="w-full bg-white border-t border-[#e5eeff]">
-        <div className="w-full max-w-[1440px] mx-auto px-6 lg:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#45474c]">
+      <footer className="w-full bg-white/50 backdrop-blur-md border-t border-slate-200/60 relative z-20">
+        <div className="w-full max-w-[1440px] mx-auto px-6 lg:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-[#eff4ff] px-2.5 py-1 rounded text-[#00a472] font-semibold">
+            <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg text-emerald-600 font-semibold hover:scale-105 transition-transform duration-200 cursor-default shadow-sm">
               <CheckCircle className="w-3.5 h-3.5" />
-              <span>ISO 27001</span>
+              <span>ISO 27001 Certified</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-[#eff4ff] px-2.5 py-1 rounded font-semibold text-[#091426]">
+            <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg font-semibold text-slate-700 hover:scale-105 transition-transform duration-200 cursor-default shadow-sm">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>DPDP Compliant</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-[#eff4ff] px-2.5 py-1 rounded font-semibold text-[#091426]">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Encrypted Sovereign Engine</span>
+              <span>SOC2 Type II</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
-            <span>© 2026 Coach Sphere. All rights reserved.</span>
-            <a href="#whitepaper" className="hover:text-[#091426] transition-colors">Security Whitepaper</a>
-            <a href="#privacy" className="hover:text-[#091426] transition-colors">Privacy Policy</a>
-            <a href="#terms" className="hover:text-[#091426] transition-colors">Terms of Operation</a>
+          <div className="flex flex-wrap items-center gap-5">
+            <span>© 2026 Coach Sphere Platform</span>
+            <div className="flex items-center gap-4">
+              <a href="#security" className="hover:text-[#4b41e1] transition-colors duration-200 font-medium">Security</a>
+              <a href="#privacy" className="hover:text-[#4b41e1] transition-colors duration-200 font-medium">Privacy</a>
+              <a href="#terms" className="hover:text-[#4b41e1] transition-colors duration-200 font-medium">Terms</a>
+            </div>
           </div>
         </div>
       </footer>

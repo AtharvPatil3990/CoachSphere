@@ -5,7 +5,6 @@ import Dashboardcontent from './Dashboardcontent';
 import TimetableRescheduler from './TimetableRescheduler';
 import Attendance from './Attendance';
 import FeeReconcile from './FeeReconcile'
-import RiskRadarCertificate from './RiskRadarCertificate'
 import TutorDashboard from './TutorDashboard'
 import MemberInvitations from './MemberInvitations';
 import InstituteSetup from './InstituteSetup';
@@ -92,12 +91,6 @@ export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding
           {/* TAB 4: Fees & Auto-Reconcile */}
           {activeTab === 'fees' && (
             <FeeReconcile 
-                onShowToast={showNotification} />
-            )}
-
-          {/* TAB 5: Risk Radar & Certificates */}
-          {activeTab === 'risk' && (
-            <RiskRadarCertificate 
                 onShowToast={showNotification} />
             )}
 

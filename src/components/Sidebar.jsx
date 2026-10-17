@@ -6,7 +6,6 @@ import {
   Calendar,
   Users,
   Wallet,
-  Radar,
   ShieldCheck,
   Menu,
   ChevronLeft,
@@ -67,12 +66,6 @@ export default function Sidebar({
       sub: 'UPI/Bank Logs & EMI Aging',
       icon: Wallet
     },
-    {
-      id: 'risk',
-      label: 'Risk Radar & Certificates',
-      sub: 'Dropout Radar & Issuance',
-      icon: Radar
-    }
   ];
 
   return (
