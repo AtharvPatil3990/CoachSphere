@@ -14,18 +14,16 @@ import {
   Sparkles,
   Users,
   Layers,
-  Award,
-  ChevronRight,
-  Send,
   RotateCcw,
   Sliders,
   Terminal,
   Lock,
-  UserCheck,
-  Building2,
-  DollarSign,
-  AlertCircle
+  UserCheck
 } from 'lucide-react';
+
+// 1. Direct import of Auth.jsx and Dashboard.jsx
+import Auth from './Auth.jsx';
+import Dashboard from './Dashboard.jsx';
 
 const SCENARIOS = {
   dropout: {
@@ -139,18 +137,19 @@ const SCENARIOS = {
   }
 };
 
-export default function App() {
-  // Scenario state
-  const [activeScenarioKey, setActiveScenarioKey] = useState('dropout');
-  const [dispatchStatus, setDispatchStatus] = useState('idle'); // idle | loading | audited
+export default function Landing() {
+  // Page routing state: 'landing' | 'auth' | 'dashboard'
+  const [currentView, setCurrentView] = useState('landing');
+  const [selectedRole, setSelectedRole] = useState('director');
 
-  // Yield calculator state
+  // Simulator state
+  const [activeScenarioKey, setActiveScenarioKey] = useState('dropout');
+  const [dispatchStatus, setDispatchStatus] = useState('idle');
   const [studentsCount, setStudentsCount] = useState(850);
   const [batchesCount, setBatchesCount] = useState(24);
 
   const activeScenario = SCENARIOS[activeScenarioKey];
 
-  // Calculated Yield metrics
   const calculatedHours = useMemo(() => {
     return (batchesCount * 0.75 + studentsCount * 0.003).toFixed(1);
   }, [batchesCount, studentsCount]);
@@ -171,16 +170,38 @@ export default function App() {
     }, 750);
   };
 
-  const handleResetApproval = () => {
-    setDispatchStatus('idle');
-  };
+  // -------------------------------------------------------------
+  // FULL WINDOW VIEW SWITCH 1: AUTH PAGE
+  // -------------------------------------------------------------
+  if (currentView === 'auth') {
+    return (
+      <Auth
+        onLoginSuccess={(role = 'director') => {
+          setSelectedRole(role);
+          setCurrentView('dashboard'); // Switches to full Dashboard
+        }}
+        onNavigateToLanding={() => setCurrentView('landing')} // Goes back to Landing
+      />
+    );
+  }
 
-  const signIn = (e) => {
-    e.preventDefault(); 
-  };
+  // -------------------------------------------------------------
+  // FULL WINDOW VIEW SWITCH 2: DASHBOARD PAGE
+  // -------------------------------------------------------------
+  if (currentView === 'dashboard') {
+    return (
+      <Dashboard
+        initialRole={selectedRole}
+        onNavigateToLanding={() => setCurrentView('landing')}
+      />
+    );
+  }
 
+  // -------------------------------------------------------------
+  // DEFAULT VIEW: FULL WINDOW LANDING PAGE
+  // -------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30] font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen w-full bg-[#f8f9ff] text-[#0b1c30] font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900">
       {/* Navigation Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#e5eeff] transition-all">
         <div className="h-16 max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between">
@@ -199,52 +220,44 @@ export default function App() {
           </div>
 
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium text-[#45474c]">
-            <a
-              href="#simulator"
-              className="px-3.5 py-1.5 rounded-lg hover:text-[#091426] hover:bg-[#eff4ff] transition-colors"
-            >
+            <a href="#simulator" className="px-3.5 py-1.5 rounded-lg hover:text-[#091426] hover:bg-[#eff4ff] transition-colors">
               Copilot Simulation
             </a>
-            <a
-              href="#pillars"
-              className="px-3.5 py-1.5 rounded-lg hover:text-[#091426] hover:bg-[#eff4ff] transition-colors"
-            >
+            <a href="#pillars" className="px-3.5 py-1.5 rounded-lg hover:text-[#091426] hover:bg-[#eff4ff] transition-colors">
               Core Systems
             </a>
-            <a
-              href="#security"
-              className="px-3.5 py-1.5 rounded-lg hover:text-[#091426] hover:bg-[#eff4ff] transition-colors"
-            >
+            <a href="#security" className="px-3.5 py-1.5 rounded-lg hover:text-[#091426] hover:bg-[#eff4ff] transition-colors">
               AST Security
             </a>
-            <a
-              href="#roi"
-              className="px-3.5 py-1.5 rounded-lg hover:text-[#091426] hover:bg-[#eff4ff] transition-colors"
-            >
+            <a href="#roi" className="px-3.5 py-1.5 rounded-lg hover:text-[#091426] hover:bg-[#eff4ff] transition-colors">
               Campus Yield
             </a>
           </nav>
 
           <div className="flex items-center gap-3">
-            <a
-                href = "#"
-              className="hidden sm:inline-flex items-center text-xs font-semibold px-3.5 py-2 rounded-lg text-[#45474c] hover:text-[#091426] bg-[#eff4ff] hover:bg-[#e5eeff] transition-all"
-                onClick = {signIn}>
+            {/* DIRECT CALL TO AUTH */}
+            <button
+              type="button"
+              onClick={() => setCurrentView('auth')}
+              className="hidden sm:inline-flex items-center text-xs font-semibold px-3.5 py-2 rounded-lg text-[#45474c] hover:text-[#091426] bg-[#eff4ff] hover:bg-[#e5eeff] transition-all cursor-pointer"
+            >
               Sign in
-            </a>
-            <a
-              href="#roi"
-              className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-lg bg-[#091426] text-white hover:bg-[#1e293b] transition-all shadow-sm active:scale-95"
+            </button>
+
+            {/* DIRECT CALL TO AUTH */}
+            <button
+              type="button"
+              onClick={() => setCurrentView('auth')}
+              className="inline-flex items-center justify-center px-4 py-2 text-xs font-bold rounded-lg bg-[#091426] text-white hover:bg-[#1e293b] transition-all shadow-sm active:scale-95 cursor-pointer"
             >
               Sign up
-            </a>
+            </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="pt-24 relative overflow-hidden">
-        {/* Glow backdrop effect */}
         <div
           className="absolute inset-0 pointer-events-none -z-10"
           style={{
@@ -255,7 +268,6 @@ export default function App() {
 
         {/* Hero Section */}
         <section className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 pb-16 flex flex-col items-center text-center">
-          {/* Status Badge */}
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white shadow-sm border border-[#e5eeff] mb-6 animate-pulse">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00a472] opacity-75"></span>
@@ -270,7 +282,6 @@ export default function App() {
             </span>
           </div>
 
-          {/* Main Headline */}
           <h1 className="font-extrabold text-3xl sm:text-5xl lg:text-6xl text-[#091426] tracking-tight max-w-4xl leading-[1.12]">
             The Autonomous Operations Copilot for{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4b41e1] via-indigo-600 to-[#1e293b]">
@@ -278,22 +289,23 @@ export default function App() {
             </span>
           </h1>
 
-          {/* Subtitle */}
           <p className="mt-6 text-base sm:text-lg text-[#45474c] max-w-2xl leading-relaxed">
             Stop managing dynamic academy logistics on spreadsheets and WhatsApp. EduPulse parses
             plain natural language into verified read-only SQL, resolves timetable clashes in 1.4s,
             and protects sensitive fee data with role-based AST fences.
           </p>
 
-          {/* Action Cluster */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="#roi"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#4b41e1] text-white font-semibold text-sm shadow-md hover:bg-[#645efb] hover:shadow-lg transition-all active:scale-95"
+            {/* DIRECT CALL TO AUTH */}
+            <button
+              type="button"
+              onClick={() => setCurrentView('auth')}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#4b41e1] text-white font-semibold text-sm shadow-md hover:bg-[#645efb] hover:shadow-lg transition-all active:scale-95 cursor-pointer"
             >
               <span>Schedule Campus Pilot</span>
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </button>
+
             <a
               href="#simulator"
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-[#0b1c30] font-semibold text-sm border border-[#e5eeff] hover:bg-[#eff4ff] transition-all shadow-sm"
@@ -349,9 +361,7 @@ export default function App() {
             </p>
           </div>
 
-          {/* Simulation Sandbox Container */}
           <div className="bg-white rounded-2xl border border-[#e5eeff] shadow-xl overflow-hidden">
-            {/* Top Terminal Header */}
             <div className="bg-[#091426] px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-white">
               <div className="flex items-center gap-3">
                 <div className="flex gap-1.5">
@@ -371,7 +381,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Scenario Navigation Tabs */}
             <div className="bg-[#eff4ff] px-6 py-3 border-b border-[#e5eeff] flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 {Object.values(SCENARIOS).map((sc) => {
@@ -380,7 +389,7 @@ export default function App() {
                     <button
                       key={sc.id}
                       onClick={() => handleScenarioChange(sc.id)}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                         isActive
                           ? 'bg-white text-[#091426] shadow-sm font-bold border border-black/5'
                           : 'text-[#45474c] hover:text-[#091426] hover:bg-white/50'
@@ -397,11 +406,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Simulation Body Grid */}
             <div className="p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Left Column: 3-Stage Pipeline */}
               <div className="lg:col-span-7 space-y-5">
-                {/* Natural Language Box */}
                 <div className="p-4 rounded-xl bg-[#eff4ff] border border-[#e5eeff]">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-[#4b41e1] flex items-center gap-1.5 mb-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-[#4b41e1]" />
@@ -412,7 +418,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Pipeline Step 1: SQL Compilation */}
                 <div className="p-4 rounded-xl bg-white border border-[#e5eeff] shadow-sm">
                   <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-[#eff4ff]">
                     <div className="flex items-center gap-2">
@@ -456,7 +461,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Pipeline Step 2: RBAC Policy Mask */}
                 <div className="p-4 rounded-xl bg-white border border-[#e5eeff] shadow-sm flex items-start gap-3">
                   <div className="w-5 h-5 rounded-full bg-[#4b41e1] text-white font-mono text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                     2
@@ -477,7 +481,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Right Column: Human Gatekeeper Staging Tray */}
               <div className="lg:col-span-5 p-5 rounded-xl bg-[#eff4ff] border border-[#e5eeff] flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-[#e5eeff]">
@@ -492,7 +495,6 @@ export default function App() {
                     </span>
                   </div>
 
-                  {/* Items in Tray */}
                   <div className="space-y-2.5 my-4">
                     {activeScenario.queueItems.map((item, idx) => (
                       <div
@@ -512,7 +514,6 @@ export default function App() {
                     ))}
                   </div>
 
-                  {/* Message Sandbox Preview */}
                   <div className="p-3 rounded-lg bg-white border border-[#e5eeff] text-xs text-[#45474c] shadow-xs">
                     <strong className="text-[#091426] block text-[11px] uppercase tracking-wider mb-1 font-bold">
                       {activeScenario.msgTitle}:
@@ -521,12 +522,11 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Sign-Off Approval Button Controls */}
                 <div className="pt-4 flex items-center gap-2">
                   <button
                     onClick={handleApprove}
                     disabled={dispatchStatus === 'loading'}
-                    className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${
+                    className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer ${
                       dispatchStatus === 'audited'
                         ? 'bg-[#00a472] text-white hover:bg-[#008f63]'
                         : dispatchStatus === 'loading'
@@ -554,8 +554,8 @@ export default function App() {
 
                   {dispatchStatus === 'audited' ? (
                     <button
-                      onClick={handleResetApproval}
-                      className="px-3 py-2.5 rounded-xl bg-white border border-[#e5eeff] text-xs font-semibold text-[#45474c] hover:text-[#091426] hover:bg-slate-50 transition-colors flex items-center gap-1"
+                      onClick={() => setDispatchStatus('idle')}
+                      className="px-3 py-2.5 rounded-xl bg-white border border-[#e5eeff] text-xs font-semibold text-[#45474c] hover:text-[#091426] hover:bg-slate-50 transition-colors flex items-center gap-1 cursor-pointer"
                       title="Reset action state"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
@@ -563,7 +563,7 @@ export default function App() {
                   ) : (
                     <button
                       onClick={() => handleScenarioChange(activeScenarioKey)}
-                      className="px-3 py-2.5 rounded-xl bg-white border border-[#e5eeff] text-xs font-semibold text-[#45474c] hover:text-[#091426] transition-colors"
+                      className="px-3 py-2.5 rounded-xl bg-white border border-[#e5eeff] text-xs font-semibold text-[#45474c] hover:text-[#091426] transition-colors cursor-pointer"
                     >
                       Dismiss
                     </button>
@@ -574,7 +574,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* SECTION 3: THE FOUR MISSION-CRITICAL SYSTEMS (Bento Grid) */}
+        {/* SECTION 3: THE FOUR MISSION-CRITICAL SYSTEMS */}
         <section id="pillars" className="max-w-7xl mx-auto px-6 lg:px-12 py-16">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e5eeff] text-[#4b41e1] text-xs uppercase font-bold tracking-wider mb-2">
@@ -590,7 +590,6 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Engine Card 1 */}
             <div className="p-6 rounded-2xl bg-white border border-[#e5eeff] shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-[#eff4ff] text-[#4b41e1] flex items-center justify-center mb-5">
@@ -613,7 +612,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Engine Card 2 */}
             <div className="p-6 rounded-2xl bg-white border border-[#e5eeff] shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-[#eff4ff] text-[#00a472] flex items-center justify-center mb-5">
@@ -636,7 +634,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Engine Card 3 */}
             <div className="p-6 rounded-2xl bg-white border border-[#e5eeff] shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-[#eff4ff] text-[#4b41e1] flex items-center justify-center mb-5">
@@ -659,7 +656,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Engine Card 4 */}
             <div className="p-6 rounded-2xl bg-white border border-[#e5eeff] shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-[#eff4ff] text-rose-600 flex items-center justify-center mb-5">
@@ -747,7 +743,6 @@ export default function App() {
         {/* SECTION 5: INTERACTIVE ROI CALCULATOR & PROOF */}
         <section id="roi" className="max-w-7xl mx-auto px-6 lg:px-12 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* ROI Slider Widget */}
             <div className="lg:col-span-7 p-6 sm:p-8 rounded-3xl bg-white border border-[#e5eeff] shadow-lg">
               <div className="flex items-center justify-between pb-6 border-b border-[#e5eeff]">
                 <div>
@@ -763,7 +758,6 @@ export default function App() {
                 </span>
               </div>
 
-              {/* Sliders Area */}
               <div className="space-y-6 my-6">
                 <div>
                   <div className="flex justify-between text-xs font-bold text-[#091426] mb-2">
@@ -816,7 +810,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Yield Metrics Display */}
               <div className="grid grid-cols-3 gap-3 pt-6 border-t border-[#e5eeff] text-center">
                 <div className="p-4 rounded-xl bg-[#eff4ff]">
                   <div className="text-xl sm:text-2xl font-black text-[#091426]">
@@ -843,7 +836,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right: Testimonial & Certification */}
             <div className="lg:col-span-5 space-y-6">
               <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e5eeff] shadow-md">
                 <div className="flex items-center gap-1 text-amber-400 mb-4">
@@ -872,7 +864,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Enterprise Certifications */}
               <div className="p-5 rounded-2xl bg-[#eff4ff] border border-[#e5eeff] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <ShieldCheck className="w-5 h-5 text-[#00a472]" />
@@ -896,11 +887,11 @@ export default function App() {
             <div className="w-7 h-7 rounded-lg bg-[#091426] flex items-center justify-center text-white font-bold text-xs">
               E
             </div>
-            <span className="font-extrabold text-sm text-[#091426]">CoachSphere.AI</span>
+            <span className="font-extrabold text-sm text-[#091426]">CodeSphere.AI</span>
             <span className="text-xs text-[#45474c]">Sponsored by TechSummitTrainers</span>
           </div>
           <div className="text-xs text-[#45474c] text-center md:text-right">
-            © 2026 CoachSphere.AI. Deterministic Academic Operations Runtime. All rights reserved.
+            © 2026 CodeSphere.AI. Deterministic Academic Operations Runtime. All rights reserved.
           </div>
         </div>
       </footer>
