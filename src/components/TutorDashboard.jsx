@@ -8,7 +8,7 @@ import Dashboardcontent from './DashboardContent';
 import Header from './Header';
 import { Check, X } from 'lucide-react';
 
-export default function TutorDashboard({ onNavigateToLanding, user }) {
+export default function TutorDashboard({ onNavigateToLanding, onLogout, user }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('copilot'); // 'copilot' | 'deck' | 'attendance' | 'schedule' | 'interventions'
   const [toast, setToast] = useState({ show: false, message: '' });
@@ -27,6 +27,7 @@ export default function TutorDashboard({ onNavigateToLanding, user }) {
         role="trainer"
         onRoleChange={() => {}}
         onNavigateToLanding={onNavigateToLanding}
+        onLogout={onLogout}
         user={user}
       />
 
@@ -36,7 +37,7 @@ export default function TutorDashboard({ onNavigateToLanding, user }) {
         onToggle={() => setSidebarOpen((prev) => !prev)}
         activeTab={activeTab}
         onSelectTab={(tabId) => setActiveTab(tabId)}
-        onLogout={onNavigateToLanding}
+        onLogout={onLogout}
       />
 
       {/* 3. Main Content Container (Padded dynamically based on sidebar state) */}

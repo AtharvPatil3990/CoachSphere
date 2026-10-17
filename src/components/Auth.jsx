@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Lock,
-  Building2,
   Mail,
   Key,
   Eye,
@@ -9,10 +8,8 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle,
-  Check,
   Sparkles,
   Rocket,
-  ShieldAlert,
   Terminal,
   Radio,
   FileCheck,
@@ -29,15 +26,10 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
   // Mode: 'signin' | 'signup'
   const [authMode, setAuthMode] = useState('signin');
 
-  // Role preset in sign-in: 'director' | 'counselor' | 'trainer' | 'bursar'
-  const [activeRole, setActiveRole] = useState('trainer');
-
   // Form states
-  const [tenantDomain, setTenantDomain] = useState('techsummit');
-  const [workEmail, setWorkEmail] = useState('ananya.sharma@techsummittrainers.com');
-  const [password, setPassword] = useState('PrecisionAST#2026!');
+  const [workEmail, setWorkEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [hardwareBound, setHardwareBound] = useState(true);
 
   // Sign up fields
   const [academyName, setAcademyName] = useState('');
@@ -58,30 +50,6 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
     isLoading: false,
   });
   const [isLoading, setIsLoading] = useState(false);
-
-  // Role presets info
-  const rolePresets = {
-    director: {
-      email: 'ananya.sharma@techsummittrainers.com',
-      indicator: 'Role: Full Executive Sovereignty',
-      disclaimer: 'Executive level: Full oversight across batch allocations, financial ledgers, and human override controls.'
-    },
-    student: {
-      email: 'vikram.counselor@techsummittrainers.com',
-      indicator: 'Role: Retention & Student CRM (Ledger Blind)',
-      disclaimer: 'Counselor sandbox: Access to student attendance and risk scoring. Zero access to trainer compensation rates.'
-    },
-    trainer: {
-      email: 'sarah.trainer@techsummittrainers.com',
-      indicator: 'Role: Trainer (Fee details masked at driver level)',
-      disclaimer: 'Faculty sandbox: Strict fee-blindness enforced at database query layer. Lab schedule and roster view only.'
-    }
-  };
-
-  const handleRoleSelect = (roleKey) => {
-    setActiveRole(roleKey);
-    setWorkEmail(rolePresets[roleKey].email);
-  };
 
   const handleDomainQuickFill = (domain) => {
     const atIndex = workEmail.indexOf('@');
@@ -170,42 +138,30 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
     }
   };
 
-  const handleSSOLogin = (provider) => {
-    showToast(`${provider} sign-in is not configured for this backend yet.`, false);
-  }
-
   return (
-    <div className="bg-[#f8f9ff] font-sans text-[#0b1c30] min-h-screen flex flex-col antialiased selection:bg-[#e2dfff] selection:text-[#0f0069]">
+    <div className="bg-[radial-gradient(circle_at_top,#eef2ff_0%,#f8f9ff_42%,#f8f9ff_100%)] font-sans text-[#0b1c30] min-h-screen flex flex-col antialiased selection:bg-[#e2dfff] selection:text-[#0f0069]">
       {/* 1. TOP HEADER */}
       <header className="fixed top-0 left-0 w-full z-50 bg-[#f8f9ff]/90 backdrop-blur-xl border-b border-[#e5eeff] shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-        <div className="h-16 w-full px-6 lg:px-12 flex items-center justify-between">
+        <div className="h-[72px] w-full px-5 sm:px-8 lg:px-12 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <button
               onClick={onNavigateToLanding}
               className="flex items-center gap-2 text-left focus:outline-none"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#091426] flex items-center justify-center text-white font-bold text-sm">
-                E
+              <div className="w-9 h-9 rounded-xl bg-[#091426] flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-slate-300/40">
+                C
               </div>
               <span className="font-bold text-lg text-[#091426] tracking-tight">
-                EduPulse<span className="text-[#4b41e1]">.AI</span>
+                Coach Spear
               </span>
               <span className="px-1.5 py-0.5 bg-[#1e293b] text-white text-[10px] font-mono rounded font-bold uppercase">
-                OPS COPILOT
+                ACADEMY PLATFORM
               </span>
             </button>
             <div className="hidden md:flex items-center gap-2 text-[#45474c] text-xs font-medium">
               <span className="w-1 h-1 rounded-full bg-[#c5c6cd]"></span>
-              <span>Sponsored by</span>
-              <span className="text-[#0b1c30] font-semibold">TechSummitTrainers</span>
+              <span className="text-[#0b1c30] font-semibold">Secure learning operations</span>
             </div>
-          </div>
-
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-[#eff4ff] rounded-full">
-            <span className="w-2 h-2 rounded-full bg-[#4edea3] animate-pulse"></span>
-            <span className="font-mono text-xs text-[#45474c] font-medium">
-              SOC-2 Type II Certified • 256-bit AST Sandbox
-            </span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -249,10 +205,10 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
       </header>
 
       {/* 2. MAIN CONTAINER */}
-      <main className="w-full pt-16 flex-1 bg-[#f8f9ff]">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-12 py-8 flex-1">
+      <main className="w-full pt-[72px] flex-1">
+        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14 flex-1">
           {/* Top Telemetry Strip */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 bg-[#eff4ff] px-4 py-2 rounded-xl shadow-sm border border-[#e5eeff]">
+          <div className="hidden">
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#00301e] text-[#4edea3] font-mono text-[11px] font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#6ffbbe] animate-ping"></span>
@@ -273,38 +229,40 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
             </div>
           </div>
 
-          {/* Grid Split: Left 7 Cols (Auth Form) / Right 5 Cols (Security Proofs) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="flex justify-center">
             
             {/* LEFT 7 COLS: Dual-Mode Auth Workspace */}
-            <div className="lg:col-span-7 flex flex-col gap-4">
-              <div className="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-[#e5eeff] relative overflow-hidden">
-                <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#e2dfff]/40 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="w-full max-w-2xl flex flex-col gap-6">
+              <div className="bg-white/95 rounded-3xl p-6 sm:p-8 md:p-10 shadow-[0_24px_70px_rgba(44,54,100,0.12)] border border-white relative overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#e2dfff]/30 rounded-full blur-3xl pointer-events-none"></div>
 
                 {/* Form Header & Switcher */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-9 relative z-10">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="px-2 py-0.5 rounded bg-[#1e293b] text-white font-mono text-[10px] font-bold">
-                        GATEWAY V3.8
+                        COACH SPHERE
                       </span>
                       <span className="text-[#4b41e1] text-xs uppercase tracking-wider font-bold">
-                        Institutional Access
+                        Secure access
                       </span>
                     </div>
-                    <h2 className="font-bold text-2xl text-[#091426] tracking-tight">
-                      {authMode === 'signin' ? 'Enterprise Console Access' : 'Provision Institute Workspace'}
+                    <p className="mt-3 max-w-md text-sm leading-6 text-slate-500">
+                      Sign in to manage your academy, or create a new workspace for your team.
+                    </p>
+                    <h2 className="mt-4 text-3xl font-bold tracking-tight text-[#091426]">
+                      {authMode === 'signin' ? 'Welcome back' : 'Create your academy'}
                     </h2>
                   </div>
 
                   {/* Silky Mode Switcher */}
-                  <div className="inline-flex p-1 bg-[#e5eeff] rounded-lg relative self-start sm:self-auto">
+                  <div className="inline-flex p-1.5 bg-slate-100 rounded-xl relative self-start sm:self-auto">
                     <button
                       type="button"
                       onClick={() => setAuthMode('signin')}
                       className={`relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                         authMode === 'signin'
-                          ? 'bg-white text-[#091426] shadow-sm'
+                          ? 'bg-white text-[#091426] shadow-sm ring-1 ring-slate-200'
                           : 'text-[#45474c] hover:text-[#0b1c30]'
                       }`}
                     >
@@ -315,7 +273,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                       onClick={() => setAuthMode('signup')}
                       className={`relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                         authMode === 'signup'
-                          ? 'bg-white text-[#091426] shadow-sm'
+                          ? 'bg-white text-[#091426] shadow-sm ring-1 ring-slate-200'
                           : 'text-[#45474c] hover:text-[#0b1c30]'
                       }`}
                     >
@@ -326,92 +284,25 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
 
                 {/* MODE 1: SIGN IN */}
                 {authMode === 'signin' ? (
-                  <div className="flex flex-col space-y-4">
-                    {/* Role Presets */}
-                    <div className="bg-[#eff4ff] rounded-xl p-3.5 space-y-2 border border-[#e5eeff]">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <span className="text-[#45474c] text-xs font-bold flex items-center gap-1.5">
-                          <ShieldAlert className="w-3.5 h-3.5 text-[#4b41e1]" />
-                          Quick Role Security Context Preset:
-                        </span>
-                        <span className="font-mono text-[11px] text-[#00a472] bg-white px-2 py-0.5 rounded shadow-sm font-semibold">
-                          {rolePresets[activeRole].indicator}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {[
-                          { key: 'director', label: 'Director / Head' },
-                          { key: 'student', label: 'Student / Educator' },
-                          { key: 'trainer', label: 'Faculty Trainer' }
-                        ].map((r) => (
-                          <button
-                            key={r.key}
-                            type="button"
-                            onClick={() => handleRoleSelect(r.key)}
-                            className={`px-2.5 py-2 rounded-lg text-xs text-left transition-all flex items-center justify-between ${
-                              activeRole === r.key
-                                ? 'bg-white text-[#091426] shadow-sm font-bold border border-[#e5eeff]'
-                                : 'bg-[#e5eeff] text-[#45474c] hover:bg-[#dce9ff]'
-                            }`}
-                          >
-                            <span className="truncate">{r.label}</span>
-                            {activeRole === r.key && <Check className="w-3.5 h-3.5 text-[#4b41e1]" />}
-                          </button>
-                        ))}
-                      </div>
-
-                      <p className="text-[#45474c] text-xs pt-1 leading-relaxed">
-                        {rolePresets[activeRole].disclaimer}
-                      </p>
-                    </div>
-
-                    <form className="space-y-4 pt-1" onSubmit={handleSignInSubmit}>
-                      {/* Tenant Domain */}
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-bold text-[#091426] flex items-center gap-1">
-                            Academy Tenant Domain
-                            <span className="text-[#ba1a1a]">*</span>
-                          </label>
-                          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[#00a472] bg-[#e5eeff] px-2 py-0.5 rounded">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#00a472]"></span>
-                            Verified: TechSummitTrainers
-                          </span>
-                        </div>
-                        <div className="flex items-center bg-[#eff4ff] rounded-lg p-1 border border-[#e5eeff] focus-within:bg-white focus-within:shadow-sm focus-within:border-[#4b41e1] transition-all">
-                          <Building2 className="w-4 h-4 text-[#45474c] ml-2 mr-1 shrink-0" />
-                          <input
-                            className="w-full bg-transparent px-2 py-1.5 font-mono text-xs text-[#091426] placeholder:text-[#75777d] focus:outline-none"
-                            type="text"
-                            value={tenantDomain}
-                            onChange={(e) => setTenantDomain(e.target.value)}
-                            placeholder="institution-subdomain"
-                            required
-                          />
-                          <span className="px-2 py-1 font-mono text-xs text-[#45474c] bg-[#e5eeff] rounded select-none mr-1">
-                            .edupulse.ai
-                          </span>
-                        </div>
-                      </div>
-
+                  <div className="flex flex-col space-y-6">
+                    <form className="space-y-6 pt-1" onSubmit={handleSignInSubmit}>
                       {/* Work Email */}
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-bold text-[#091426]">Institutional Work Email</label>
-                          <div className="flex items-center gap-1">
+                          <div className="hidden sm:flex items-center gap-1">
                             <span className="text-[#45474c] text-[10px] uppercase font-bold">Quick-fill:</span>
                             <button
                               type="button"
                               onClick={() => handleDomainQuickFill('@techsummittrainers.com')}
-                              className="px-1.5 py-0.5 rounded bg-[#e5eeff] text-[#091426] font-mono text-[10px] hover:bg-[#dce9ff] transition-colors"
+                              className="px-2 py-1 rounded-lg bg-[#e5eeff] text-[#091426] font-mono text-[10px] hover:bg-[#dce9ff] transition-colors"
                             >
                               @techsummittrainers.com
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDomainQuickFill('@academy.edu')}
-                              className="px-1.5 py-0.5 rounded bg-[#e5eeff] text-[#091426] font-mono text-[10px] hover:bg-[#dce9ff] transition-colors"
+                              className="px-2 py-1 rounded-lg bg-[#e5eeff] text-[#091426] font-mono text-[10px] hover:bg-[#dce9ff] transition-colors"
                             >
                               @academy.edu
                             </button>
@@ -420,7 +311,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                         <div className="relative flex items-center">
                           <Mail className="w-4 h-4 text-[#45474c] absolute left-3 pointer-events-none" />
                           <input
-                            className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg pl-9 pr-3 py-2 text-xs text-[#091426] focus:bg-white focus:shadow-sm focus:border-[#4b41e1] focus:outline-none transition-all placeholder:text-[#75777d]"
+                            className="w-full bg-[#f8faff] border border-[#dfe6f3] rounded-xl pl-10 pr-3 py-3 text-sm text-[#091426] focus:bg-white focus:shadow-sm focus:border-[#4b41e1] focus:outline-none transition-all placeholder:text-[#9aa3b5]"
                             type="email"
                             value={workEmail}
                             onChange={(e) => setWorkEmail(e.target.value)}
@@ -431,7 +322,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                       </div>
 
                       {/* Password */}
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-bold text-[#091426]">Master Passphrase / Token</label>
                           <a href="#reset" className="text-[#4b41e1] hover:underline text-xs font-semibold">
@@ -441,7 +332,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                         <div className="relative flex items-center">
                           <Key className="w-4 h-4 text-[#45474c] absolute left-3 pointer-events-none" />
                           <input
-                            className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg pl-9 pr-10 py-2 font-mono text-xs text-[#091426] focus:bg-white focus:shadow-sm focus:border-[#4b41e1] focus:outline-none transition-all placeholder:text-[#75777d]"
+                            className="w-full bg-[#f8faff] border border-[#dfe6f3] rounded-xl pl-10 pr-10 py-3 text-sm font-mono text-[#091426] focus:bg-white focus:shadow-sm focus:border-[#4b41e1] focus:outline-none transition-all placeholder:text-[#9aa3b5]"
                             type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -458,29 +349,11 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                         </div>
                       </div>
 
-                      {/* Hardware Token & SSO Ready */}
-                      <div className="flex items-center justify-between py-1">
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={hardwareBound}
-                            onChange={(e) => setHardwareBound(e.target.checked)}
-                            className="w-4 h-4 rounded text-[#4b41e1] accent-[#4b41e1] cursor-pointer"
-                          />
-                          <span className="text-xs text-[#091426] font-medium">
-                            AST hardware-token bound session (30 Days)
-                          </span>
-                        </label>
-                        <span className="hidden sm:inline-flex items-center gap-1 text-[#00a472] font-mono text-xs font-semibold">
-                          <ShieldCheck className="w-3.5 h-3.5" /> Entra SSO Ready
-                        </span>
-                      </div>
-
                       {/* Primary Sign In Button */}
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#091426] text-white hover:bg-[#1e293b] transition-all shadow-md text-sm font-bold group disabled:opacity-75 cursor-pointer"
+                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#091426] text-white hover:bg-[#1e293b] transition-all shadow-lg shadow-slate-300/40 text-sm font-bold group disabled:opacity-75 cursor-pointer"
                       >
                         {isLoading ? (
                           <>
@@ -490,66 +363,17 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                         ) : (
                           <>
                             <Lock className="w-4 h-4 text-[#4edea3]" />
-                            <span>Sign In to Operations Copilot</span>
+                            <span>Sign in to Coach Sphere</span>
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                           </>
                         )}
                       </button>
                     </form>
 
-                    {/* Federated SSO */}
-                    <div className="pt-2 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-px flex-1 bg-[#e5eeff]"></div>
-                        <span className="text-[#45474c] text-[10px] font-bold uppercase tracking-wider">
-                          Federated Enterprise SSO
-                        </span>
-                        <div className="h-px flex-1 bg-[#e5eeff]"></div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => handleSSOLogin('Google Workspace')}
-                          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#eff4ff] hover:bg-[#e5eeff] text-[#091426] text-xs font-semibold transition-all border border-[#e5eeff]"
-                        >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
-                          </svg>
-                          <span>Google SSO</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleSSOLogin('Microsoft Entra ID')}
-                          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#eff4ff] hover:bg-[#e5eeff] text-[#091426] text-xs font-semibold transition-all border border-[#e5eeff]"
-                        >
-                          <svg className="w-4 h-4" viewBox="0 0 23 23">
-                            <path d="M1 1h10v10H1z" fill="#f35325" />
-                            <path d="M12 1h10v10H12z" fill="#81bc06" />
-                            <path d="M1 12h10v10H1z" fill="#05a6f0" />
-                            <path d="M12 12h10v10H12z" fill="#ffba08" />
-                          </svg>
-                          <span>Entra ID</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleSSOLogin('Okta / SAML 2.0')}
-                          className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#eff4ff] hover:bg-[#e5eeff] text-[#091426] text-xs font-semibold transition-all border border-[#e5eeff]"
-                        >
-                          <Key className="w-3.5 h-3.5 text-[#4b41e1]" />
-                          <span>SAML / Okta</span>
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 ) : (
                   /* MODE 2: CREATE ACADEMY (SIGN UP) */
-                  <div className="flex flex-col space-y-4">
+                  <div className="flex flex-col space-y-7">
                     <div className="bg-[#eff4ff] rounded-xl p-3 flex items-center justify-between border border-[#e5eeff]">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-[#4b41e1]"></span>
@@ -562,9 +386,9 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                       </span>
                     </div>
 
-                    <form className="space-y-4" onSubmit={handleSignUpSubmit}>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
+                    <form className="space-y-6" onSubmit={handleSignUpSubmit}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-2">
                           <label className="text-xs font-bold text-[#091426]">Institute / Academy Name</label>
                           <input
                             className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
@@ -575,7 +399,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                             type="text"
                           />
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <label className="text-xs font-bold text-[#091426]">Desired Workspace Pod</label>
                           <div className="flex items-center bg-[#eff4ff] border border-[#e5eeff] rounded-lg p-0.5 focus-within:bg-white">
                             <input
@@ -591,8 +415,8 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-2">
                           <label className="text-xs font-bold text-[#091426]">Administrator Legal Name</label>
                           <input
                             className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
@@ -603,7 +427,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                             type="text"
                           />
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <label className="text-xs font-bold text-[#091426]">Clearance Tier</label>
                           <select
                             value={adminTier}
@@ -618,8 +442,8 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="space-y-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-2">
                           <label className="text-xs font-bold text-[#091426]">Enterprise Work Email</label>
                           <input
                             className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
@@ -630,7 +454,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                             type="email"
                           />
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold text-[#091426]">Emergency Phone</label>
                             <span className="inline-flex items-center gap-1 text-[10px] text-[#00a472] font-semibold">
@@ -648,7 +472,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                         </div>
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         <label className="text-xs font-bold text-[#091426]">Administrator Password</label>
                         <input
                           className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 font-mono text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
@@ -662,11 +486,11 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                       </div>
 
                       {/* Scale Tier Radio Cards */}
-                      <div className="space-y-1.5">
+                      <div className="space-y-3">
                         <label className="text-xs font-bold text-[#091426]">
                           Operational Scale Tier (Simultaneous Active Students)
                         </label>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           {[
                             { id: 'tier1', range: '1 - 500', desc: 'Single Campus / 10 Labs' },
                             { id: 'tier2', range: '500 - 3,500', desc: 'Multi-Branch Hub' },
@@ -696,7 +520,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                       </div>
 
                       {/* Security Attestation */}
-                      <div className="p-3 rounded-xl bg-[#eff4ff] border border-[#e5eeff]">
+                      <div className="p-4 rounded-2xl bg-[#f5f7ff] border border-[#e1e7f5]">
                         <label className="flex items-start gap-2.5 cursor-pointer select-none">
                           <input
                             type="checkbox"
@@ -716,7 +540,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#4b41e1] text-white hover:bg-[#645efb] transition-all shadow-md text-sm font-bold group disabled:opacity-75 cursor-pointer"
+                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#4b41e1] text-white hover:bg-[#645efb] transition-all shadow-lg shadow-indigo-200/50 text-sm font-bold group disabled:opacity-75 cursor-pointer"
                       >
                         {isLoading ? (
                           <>
@@ -754,7 +578,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
               </div>
 
               {/* Compliance Trust Micro-Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="hidden">
                 {[
                   { icon: ShieldCheck, title: 'SOC-2 Type II', sub: 'Continuous Audit' },
                   { icon: EyeOff, title: 'Fee Blindness', sub: 'Trainer Partition' },
@@ -775,8 +599,8 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
               </div>
             </div>
 
-            {/* RIGHT 5 COLS: Institutional Security & Proof Showcase */}
-            <div className="lg:col-span-5 flex flex-col gap-4">
+            {/* Institutional security showcase is intentionally omitted from the focused auth screen. */}
+            <div className="hidden">
               {/* Operations Stat Ticker */}
               <div className="bg-[#091426] text-white rounded-2xl p-4 shadow-md flex items-center justify-between border border-[#1e293b]">
                 <div className="flex items-center gap-2">
@@ -822,7 +646,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                 </div>
 
                 <blockquote className="text-sm text-[#091426] italic leading-relaxed">
-                  “Before EduPulse, a trainer calling sick on Monday morning caused 4 hours of timetable panic across labs and Zoom links. Now, our Ops Copilot simulates replacements and reschedules batches in <strong className="text-[#4b41e1]">1.4 seconds</strong> without human stress.”
+                  “Before Coach Sphere, a trainer calling sick on Monday morning caused hours of timetable panic. Now, our operations platform helps teams coordinate schedules without human stress.”
                 </blockquote>
 
                 <div className="flex items-center gap-3 pt-2 border-t border-[#f0f4ff]">
@@ -831,7 +655,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
                   </div>
                   <div className="flex flex-col">
                     <span className="font-bold text-xs text-[#091426]">Ananya Sharma</span>
-                    <span className="text-[11px] text-[#45474c]">Operations Director, TechSummitTrainers</span>
+                    <span className="text-[11px] text-[#45474c]">Operations Director, Coach Sphere</span>
                     <span className="font-mono text-[10px] text-[#4b41e1] font-semibold">8 Campuses • 4,200 Active Trainees</span>
                   </div>
                 </div>
@@ -922,7 +746,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessa
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <span>© 2026 EduPulse.AI Systems Inc. All rights reserved.</span>
+            <span>© 2026 Coach Sphere. All rights reserved.</span>
             <a href="#whitepaper" className="hover:text-[#091426] transition-colors">Security Whitepaper</a>
             <a href="#privacy" className="hover:text-[#091426] transition-colors">Privacy Policy</a>
             <a href="#terms" className="hover:text-[#091426] transition-colors">Terms of Operation</a>

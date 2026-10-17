@@ -290,7 +290,7 @@ export default function Landing() {
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-[#45474c] max-w-2xl leading-relaxed">
-            Stop managing dynamic academy logistics on spreadsheets and WhatsApp. EduPulse parses
+            Stop managing dynamic academy logistics on spreadsheets and WhatsApp. Coach Sphere parses
             plain natural language into verified read-only SQL, resolves timetable clashes in 1.4s,
             and protects sensitive fee data with role-based AST fences.
           </p>
@@ -326,7 +326,7 @@ export default function Landing() {
                   Ecosystem Partnership
                 </div>
                 <div className="text-sm font-bold text-[#091426]">
-                  Sponsored by TechSummitTrainers
+                  Powered by Coach Sphere
                 </div>
               </div>
             </div>
@@ -356,7 +356,7 @@ export default function Landing() {
               From Natural Question to Verified Human Sign-Off
             </h2>
             <p className="text-sm text-[#45474c] mt-2">
-              See how EduPulse handles high-stakes administrative queries without risking data leaks
+              See how Coach Sphere handles high-stakes administrative queries without risking data leaks
               or database corruption.
             </p>
           </div>
@@ -602,7 +602,7 @@ export default function Landing() {
                   Clash-Free Timetable Re-Planner
                 </h3>
                 <p className="text-xs text-[#45474c] leading-relaxed">
-                  When an instructor reports sick, EduPulse recomputes lab rooms, trainer fatigue
+                  When an instructor reports sick, Coach Sphere recomputes lab rooms, trainer fatigue
                   limits, and WebRTC caps in under 1.4 seconds with zero overlaps.
                 </p>
               </div>
@@ -693,7 +693,7 @@ export default function Landing() {
               </h2>
               <p className="text-sm sm:text-base text-[#cbdbf5] mt-2 leading-relaxed">
                 Unlike untrusted LLM wrappers that can corrupt databases or leak private financial
-                details, EduPulse executes natural language queries through an immutable Abstract
+                details, Coach Sphere executes natural language queries through an immutable Abstract
                 Syntax Tree compiler.
               </p>
             </div>
@@ -858,7 +858,7 @@ export default function Landing() {
                   <div>
                     <div className="font-bold text-xs text-[#091426]">Ananya Sharma</div>
                     <div className="text-[11px] text-[#45474c]">
-                      Operations Director • TechSummitTrainers
+                      Operations Director • Coach Sphere
                     </div>
                   </div>
                 </div>
@@ -888,7 +888,7 @@ export default function Landing() {
               E
             </div>
             <span className="font-extrabold text-sm text-[#091426]">CodeSphere.AI</span>
-            <span className="text-xs text-[#45474c]">Sponsored by TechSummitTrainers</span>
+            <span className="text-xs text-[#45474c]">Powered by Coach Sphere</span>
           </div>
           <div className="text-xs text-[#45474c] text-center md:text-right">
             © 2026 CodeSphere.AI. Deterministic Academic Operations Runtime. All rights reserved.

@@ -52,11 +52,12 @@ export default function App() {
     setCurrentRole(newRole.toLowerCase().trim());
   };
 
-  const handleNavigateToLanding = () => {
+  const handleSignOut = () => {
     clearSession();
     setCurrentUser(null);
     setCurrentRole(null);
     setCurrentPage('auth');
+    setSessionRestoreError('');
   };
 
   if (isRestoringSession) {
@@ -105,7 +106,7 @@ export default function App() {
       {currentPage === 'auth' && (
         <Auth
           onLoginSuccess={handleLoginSuccess}
-          onNavigateToLanding={handleNavigateToLanding}
+          onNavigateToLanding={handleSignOut}
           initialMessage={sessionRestoreError}
         />
       )}
@@ -114,15 +115,15 @@ export default function App() {
         <div className="w-full">
           {isStudentRole ? (
             <StudentPortal
-              onLogout={handleNavigateToLanding}
-              onNavigateToLanding={handleNavigateToLanding}
+              onLogout={handleSignOut}
+              onNavigateToLanding={handleSignOut}
               onSwitchRole={handleRoleSwitch}
               user={currentUser}
             />
           ) : isTrainerRole ? (
             <TutorDashboard
-              onLogout={handleNavigateToLanding}
-              onNavigateToLanding={handleNavigateToLanding}
+              onLogout={handleSignOut}
+              onNavigateToLanding={handleSignOut}
               onSwitchRole={handleRoleSwitch}
               user={currentUser}
             />
@@ -130,7 +131,8 @@ export default function App() {
             <DirectorDashboard
               initialRole={currentRole}
               onRoleChange={handleRoleSwitch}
-              onNavigateToLanding={handleNavigateToLanding}
+              onLogout={handleSignOut}
+              onNavigateToLanding={handleSignOut}
               user={currentUser}
             />
           )}

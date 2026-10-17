@@ -28,6 +28,7 @@ export default function StudentPortal({ onLogout, onNavigateToLanding, onSwitchR
         role="student"
         onRoleChange={onSwitchRole}
         onNavigateToLanding={logoutHandler}
+        onLogout={logoutHandler}
         user={user}
       />
 

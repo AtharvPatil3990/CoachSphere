@@ -1,7 +1,7 @@
 import React from 'react';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, LogOut } from 'lucide-react';
 
-export default function Header({ role, onRoleChange, onNotify, user }) {
+export default function Header({ role, onRoleChange, onNotify, onLogout = () => {}, user }) {
   const displayName = user?.full_name || user?.name || user?.email || 'User';
   const displayRole = user?.role || user?.user_role || role || 'User';
   const initials = displayName
@@ -22,12 +22,12 @@ export default function Header({ role, onRoleChange, onNotify, user }) {
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-[15px] text-[#091426] tracking-tight">EduPulse.AI</span>
+                <span className="font-bold text-[15px] text-[#091426] tracking-tight">Coach Sphere</span>
                 <span className="px-1.5 py-0.5 rounded text-[10px] bg-[#1e293b] text-white font-bold uppercase tracking-wider">
                   Ops Copilot
                 </span>
               </div>
-              <span className="text-[10px] text-[#45474c]">by TechSummitTrainers</span>
+              <span className="text-[10px] text-[#45474c]">Academy operations platform</span>
             </div>
           </div>
         </div>
@@ -68,6 +68,17 @@ export default function Header({ role, onRoleChange, onNotify, user }) {
               4
             </span>
           </div>
+
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex h-8 items-center gap-2 rounded-xl px-2.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-600"
+            aria-label="Sign out"
+            title="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Sign out</span>
+          </button>
 
           <div className="flex items-center gap-2 pl-1.5 py-1 pr-3 rounded-xl bg-[#eff4ff]">
             <div className="w-8 h-8 rounded-full bg-[#1e293b] text-white flex items-center justify-center font-bold text-xs">

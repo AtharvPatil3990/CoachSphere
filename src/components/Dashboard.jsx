@@ -10,7 +10,7 @@ import TutorDashboard from './TutorDashboard'
 import MemberInvitations from './MemberInvitations';
 import InstituteSetup from './InstituteSetup';
 
-export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding, user }) {
+export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding, onLogout, user }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [role, setRole] = useState(initialRole);
   
@@ -25,6 +25,7 @@ export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding
     return (
       <TutorDashboard
         onNavigateToLanding={onNavigateToLanding}
+        onLogout={onLogout}
         onSwitchRole={(newRole) => setRole(newRole)}
         user={user}
       />
@@ -36,6 +37,7 @@ export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding
         role={role}
         onRoleChange={setRole}
         onNavigateToLanding={onNavigateToLanding}
+        onLogout={onLogout}
         user={user}
       />
 
@@ -45,6 +47,7 @@ export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding
         onToggle={() => setSidebarOpen((prev) => !prev)}
         activeTab={activeTab}
         onSelectTab={(tabId) => setActiveTab(tabId)}
+        onLogout={onLogout}
       />
 
       {/* 3. Main dynamic viewport with responsive padding */}
