@@ -16,13 +16,12 @@ import {
 } from 'lucide-react';
 
 import SqlAstModal from '../modal/SqlAstModal';
+import { apiRequest } from '../api/client';
 
 export default function Dashboardcontent({
   role = 'director',
   isTrainer = false,
-  onRoleChange = () => {},
-  prompt = '',
-  setPrompt = () => {},
+  user,
   cards = {
     rahul: { visible: true, approved: false },
     trainerSub: { visible: true, approved: false },
@@ -38,14 +37,105 @@ export default function Dashboardcontent({
   const [showSql, setShowSql] = useState(false);
   const [isQuerying, setIsQuerying] = useState(false);
   const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
+  const [prompt, setPrompt] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [copilotResult, setCopilotResult] = useState(null);
+  const [actionState, setActionState] = useState({});
 
-  const handleRunCopilot = () => {
-    if (!prompt.trim()) return;
+  const handleRunCopilot = async () => {
+    const message = prompt.trim();
+    if (!message || isQuerying) return;
     setIsQuerying(true);
-    setTimeout(() => {
+    setPrompt('');
+    setMessages((current) => [...current, { role: 'user', content: message }]);
+
+    try {
+      const result = await apiRequest('/api/copilot/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          message,
+        }),
+      });
+      setCopilotResult(result);
+      setMessages((current) => [
+        ...current,
+        {
+          role: 'assistant',
+          content: getResponseSummary(result),
+        },
+      ]);
+      onShowToast('Copilot response received.');
+    } catch (error) {
+      onShowToast(error.message || 'Copilot request failed.');
+    } finally {
       setIsQuerying(false);
-      onShowToast('Query evaluated. Staged 3 actions for Human-in-the-Loop review.');
-    }, 800);
+    }
+  };
+
+  const handlePromptKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleRunCopilot();
+    }
+  };
+
+  const getResponseSummary = (result) =>
+    result?.summary ||
+    result?.message ||
+    result?.response ||
+    result?.answer ||
+    result?.data?.message ||
+    (typeof result === 'string' ? result : 'The assistant returned no summary.');
+
+  const getActions = () => {
+    const actions =
+      copilotResult?.actions ||
+      copilotResult?.staged_actions ||
+      copilotResult?.data?.actions ||
+      copilotResult?.data?.staged_actions ||
+      [];
+
+    return Array.isArray(actions) ? actions : [];
+  };
+
+  const getResponseRows = () =>
+    Array.isArray(copilotResult?.data) ? copilotResult.data : [];
+
+  const getResponseColumns = () => {
+    const columns = new Set();
+    getResponseRows().forEach((row) => {
+      if (row && typeof row === 'object' && !Array.isArray(row)) {
+        Object.keys(row).forEach((key) => columns.add(key));
+      }
+    });
+    return Array.from(columns);
+  };
+
+  const handleActionDecision = async (action, decision) => {
+    const actionId = action?.id || action?.action_id;
+    const userId = user?.id || user?.user_id;
+
+    if (!actionId || !userId) {
+      onShowToast('The action or authenticated user ID is missing.');
+      return;
+    }
+
+    setActionState((current) => ({ ...current, [actionId]: 'loading' }));
+
+    try {
+      await apiRequest(`/api/actions/${encodeURIComponent(actionId)}/${decision}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          user_role: user?.role || user?.user_role || role,
+        }),
+      });
+      setActionState((current) => ({ ...current, [actionId]: decision }));
+      onShowToast(`Action ${decision === 'approve' ? 'approved' : 'rejected'} successfully.`);
+    } catch (error) {
+      setActionState((current) => ({ ...current, [actionId]: 'error' }));
+      onShowToast(error.message || `Action ${decision} failed.`);
+    }
   };
 
   return (
@@ -65,19 +155,49 @@ export default function Dashboardcontent({
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Ask multi-domain questions across attendance, fees, and syllabus progression.
+              Ask the authenticated Copilot about your institute operations.
             </p>
           </div>
+        </div>
+
+        <div className="min-h-32 max-h-80 space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3">
+          {messages.length === 0 ? (
+            <div className="flex h-24 items-center justify-center text-center text-xs text-slate-400">
+              Start a conversation with the Operations Copilot.
+            </div>
+          ) : (
+            messages.map((item, index) => (
+              <div
+                key={`${item.role}-${index}`}
+                className={`flex ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[90%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm ${
+                    item.role === 'user'
+                      ? 'rounded-br-sm bg-indigo-600 text-white'
+                      : 'rounded-bl-sm bg-white text-slate-700 shadow-sm ring-1 ring-slate-200'
+                  }`}
+                >
+                  {item.content}
+                </div>
+              </div>
+            ))
+          )}
+          {isQuerying && (
+            <div className="text-xs text-slate-500">Copilot is thinking...</div>
+          )}
         </div>
 
         <div className="relative">
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g., Which students in Java Full Stack have missed 3 classes and have EMIs due?"
-            className="w-full h-24 p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all"
+            onKeyDown={handlePromptKeyDown}
+            placeholder="Type a message... Press Enter to send, Shift+Enter for a new line."
+            aria-label="Message Operations Copilot"
+            className="h-24 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900 transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
-          <div className="absolute bottom-3 right-3 flex items-center gap-2">
+          <div className="mt-3 flex flex-col-reverse gap-2 sm:absolute sm:bottom-3 sm:right-3 sm:flex-row">
             <button
               type="button"
               onClick={() => setIsSqlModalOpen(true)}
@@ -94,7 +214,7 @@ export default function Dashboardcontent({
               className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-xs cursor-pointer disabled:opacity-75"
             >
               <Sparkles className={`w-3.5 h-3.5 ${isQuerying ? 'animate-spin' : ''}`} />
-              <span>{isQuerying ? 'Analyzing...' : 'Generate Actions'}</span>
+              <span>{isQuerying ? 'Sending...' : 'Send message'}</span>
             </button>
           </div>
         </div>
@@ -118,6 +238,123 @@ WHERE a.absences >= 3
   AND f.status = 'overdue' 
   AND s.batch_id = 'JFS-04';`}
             </pre>
+          </div>
+        )}
+
+        {copilotResult && (
+          <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-xs font-bold uppercase tracking-wide text-indigo-900">Backend Copilot Response</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setCopilotResult(null);
+                  setMessages([]);
+                }}
+                className="text-xs text-indigo-700 hover:underline"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="rounded-lg border border-indigo-100 bg-white p-3">
+              <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-700">
+                {getResponseSummary(copilotResult)}
+              </p>
+              {typeof copilotResult?.row_count === 'number' && (
+                <p className="mt-3 text-[11px] font-semibold text-slate-500">
+                  {copilotResult.row_count} {copilotResult.row_count === 1 ? 'row' : 'rows'} returned
+                </p>
+              )}
+            </div>
+
+            {getResponseRows().length > 0 && (
+              <div className="overflow-hidden rounded-lg border border-indigo-100 bg-white">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
+                      <tr>
+                        {getResponseColumns().map((column) => (
+                          <th key={column} className="whitespace-nowrap px-3 py-2 font-bold">
+                            {column.replaceAll('_', ' ')}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {getResponseRows().map((row, rowIndex) => (
+                        <tr key={row?.id || rowIndex} className="align-top">
+                          {getResponseColumns().map((column) => (
+                            <td key={column} className="max-w-xs break-words px-3 py-2 text-slate-700">
+                              {row?.[column] === null || row?.[column] === undefined
+                                ? '—'
+                                : String(row[column])}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {copilotResult?.executed_sql && (
+              <details className="rounded-lg border border-slate-700 bg-[#091426]">
+                <summary className="cursor-pointer px-3 py-2 text-xs font-bold text-slate-200">
+                  View executed SQL
+                </summary>
+                <pre className="overflow-x-auto whitespace-pre-wrap break-words border-t border-slate-700 p-3 text-[11px] leading-relaxed text-emerald-300">
+                  {copilotResult.executed_sql}
+                </pre>
+              </details>
+            )}
+
+            {copilotResult?.action_preview && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-amber-800">
+                  Action preview
+                </p>
+                <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words text-xs text-amber-950">
+                  {typeof copilotResult.action_preview === 'string'
+                    ? copilotResult.action_preview
+                    : JSON.stringify(copilotResult.action_preview, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            {getActions().length > 0 && (
+              <div className="grid grid-cols-1 gap-3">
+                {getActions().map((action, index) => {
+                  const actionId = action?.id || action?.action_id || `action-${index}`;
+                  const state = actionState[actionId];
+                  return (
+                    <div key={actionId} className="rounded-lg border border-indigo-100 bg-white p-3">
+                      <p className="break-words text-xs font-semibold text-slate-900">
+                        {action?.title || action?.description || action?.message || `Action ${index + 1}`}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={Boolean(state) && state !== 'error'}
+                          onClick={() => handleActionDecision(action, 'approve')}
+                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+                        >
+                          {state === 'approve' ? 'Approved' : 'Approve'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={Boolean(state) && state !== 'error'}
+                          onClick={() => handleActionDecision(action, 'reject')}
+                          className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+                        >
+                          {state === 'reject' ? 'Rejected' : 'Reject'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </section>

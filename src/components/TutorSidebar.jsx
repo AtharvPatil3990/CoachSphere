@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   BookOpen,
+  Brain,
   CheckSquare,
   Calendar,
   HelpCircle,
@@ -26,6 +27,12 @@ export default function TutorSidebar({
   };
 
   const navItems = [
+    {
+      id: 'copilot',
+      label: 'Copilot Center',
+      sub: 'Ask & review actions',
+      icon: Brain
+    },
     {
       id: 'deck',
       label: 'My Teaching Deck',

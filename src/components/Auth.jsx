@@ -20,10 +20,12 @@ import {
   Globe,
   User,
   ExternalLink,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+import { apiRequest, getAuthToken, saveSession } from '../api/client';
 
-export default function Auth({ onLoginSuccess, onNavigateToLanding }) {
+export default function Auth({ onLoginSuccess, onNavigateToLanding, initialMessage = '' }) {
   // Mode: 'signin' | 'signup'
   const [authMode, setAuthMode] = useState('signin');
 
@@ -37,8 +39,6 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding }) {
   const [showPassword, setShowPassword] = useState(false);
   const [hardwareBound, setHardwareBound] = useState(true);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   // Sign up fields
   const [academyName, setAcademyName] = useState('');
   const [desiredSubdomain, setDesiredSubdomain] = useState('');
@@ -46,11 +46,17 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding }) {
   const [adminTier, setAdminTier] = useState('director');
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPhone, setAdminPhone] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
   const [scaleTier, setScaleTier] = useState('tier1');
   const [attestation, setAttestation] = useState(false);
 
   // Status feedback toast
-  const [statusToast, setStatusToast] = useState({ show: false, message: '', isSuccess: false });
+  const [statusToast, setStatusToast] = useState({
+    show: Boolean(initialMessage),
+    message: initialMessage,
+    isSuccess: false,
+    isLoading: false,
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   // Role presets info
@@ -92,63 +98,80 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding }) {
     setDesiredSubdomain(clean.substring(0, 15));
   };
 
-  const showToast = (message, isSuccess = false) => {
-    setStatusToast({ show: true, message, isSuccess });
+  const showToast = (message, isSuccess = false, isLoading = false) => {
+    setStatusToast({ show: true, message, isSuccess, isLoading });
   };
 
-  // Sign In handler that connects to your Dashboard
-  const handleSignInSubmit = (e) => {
+  const handleSignInSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    showToast('Verifying cryptographic token & tenant isolation boundaries...', false);
+    showToast('Signing in...', false, true);
 
-    setTimeout(() => {
-      showToast('Handshake complete! Redirecting to Sovereign Operations Copilot...', true);
-      setTimeout(() => {
-        setIsLoading(false);
-        if (onLoginSuccess) {
-          // Pass active role so Dashboard boots into the chosen perspective!
-          onLoginSuccess(activeRole);
-        }
-      }, 1000);
-    }, 1200);
+    try {
+      const result = await apiRequest('/api/auth/signin', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: workEmail.trim(),
+          password,
+        }),
+      });
+      const token = getAuthToken(result);
+
+      if (!token) {
+        throw new Error('Sign-in succeeded but the server did not return an access token.');
+      }
+
+      localStorage.setItem('access_token', token);
+      const user = await apiRequest('/api/auth/me');
+      saveSession(token, user);
+      onLoginSuccess(user, 'Signed in successfully.');
+    } catch (error) {
+      showToast(error.message || 'Sign-in failed.', false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSignUpSubmit = (e) => {
+  const handleSignUpSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    showToast('Provisioning zero-mutation pod & configuring 2FA WhatsApp route...', false);
+    showToast('Creating your institute account...', false, true);
 
-    setTimeout(() => {
-      showToast('Workspace created! Verification code dispatched to WhatsApp.', true);
-      setTimeout(() => {
-        setIsLoading(false);
-        if (onLoginSuccess) {
-          onLoginSuccess('director');
-        }
-      }, 1200);
-    }, 1500);
+    try {
+      const result = await apiRequest('/api/auth/signup/admin', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: adminEmail.trim(),
+          password: signupPassword,
+          full_name: adminName.trim(),
+          phone: adminPhone.trim(),
+          institute_name: academyName.trim(),
+          institute_address: null,
+          institute_phone: null,
+          institute_email: adminEmail.trim(),
+        }),
+      });
+      const token = getAuthToken(result);
+
+      if (token) {
+        localStorage.setItem('access_token', token);
+        const user = await apiRequest('/api/auth/me');
+        saveSession(token, user);
+        onLoginSuccess(user, 'Institute account created successfully.');
+      } else {
+        showToast('Account created. Sign in to continue.', true);
+        setAuthMode('signin');
+        setWorkEmail(adminEmail);
+      }
+    } catch (error) {
+      showToast(error.message || 'Registration failed.', false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSSOLogin = (provider) => {
-    showToast(`Redirecting to federated ${provider} assertion broker...`, false);
-    setTimeout(() => {
-      showToast(`Identity provider ${provider} validated. Logging in...`, true);
-      setTimeout(() => {
-        if (onLoginSuccess) {
-          onLoginSuccess('director');
-        }
-      }, 900);
-    }, 1200);
-  };
-
-  if (isLoggedIn) {
-    return (
-      <Dashboard
-        initialRole="director"
-        onNavigateToLanding={() => setIsLoggedIn(false)}
-      />
-    );
+    showToast(`${provider} sign-in is not configured for this backend yet.`, false);
   }
 
   return (
@@ -625,6 +648,19 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding }) {
                         </div>
                       </div>
 
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-[#091426]">Administrator Password</label>
+                        <input
+                          className="w-full bg-[#eff4ff] border border-[#e5eeff] rounded-lg px-3 py-2 font-mono text-xs text-[#091426] focus:bg-white focus:outline-none focus:border-[#4b41e1]"
+                          type="password"
+                          value={signupPassword}
+                          onChange={(e) => setSignupPassword(e.target.value)}
+                          placeholder="Create a secure password"
+                          minLength={8}
+                          required
+                        />
+                      </div>
+
                       {/* Scale Tier Radio Cards */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-[#091426]">
@@ -679,8 +715,7 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding }) {
                       {/* Provision Submit */}
                       <button
                         type="submit"
-                        //disabled={isLoading}
-                        onClick={() => setIsLoggedIn(true)}
+                        disabled={isLoading}
                         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#4b41e1] text-white hover:bg-[#645efb] transition-all shadow-md text-sm font-bold group disabled:opacity-75 cursor-pointer"
                       >
                         {isLoading ? (
@@ -704,10 +739,12 @@ export default function Auth({ onLoginSuccess, onNavigateToLanding }) {
                 {statusToast.show && (
                   <div className="mt-4 p-3 rounded-xl bg-[#eff4ff] border border-[#dce9ff] flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-[#091426]">
-                      {statusToast.isSuccess ? (
+                      {statusToast.isLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-[#4b41e1]" />
+                      ) : statusToast.isSuccess ? (
                         <CheckCircle className="w-4 h-4 text-[#00a472]" />
                       ) : (
-                        <Loader2 className="w-4 h-4 animate-spin text-[#4b41e1]" />
+                        <AlertCircle className="w-4 h-4 text-[#ba1a1a]" />
                       )}
                       <span>{statusToast.message}</span>
                     </div>

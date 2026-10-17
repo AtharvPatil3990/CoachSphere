@@ -4,12 +4,13 @@ import TutorDeck from './TutorDesk';
 import TutorAttendance from './TutorAttendance';
 import TutorSchedule from './TutorSchedule';
 import TutorInterventions from './TutorInterventions';
+import Dashboardcontent from './DashboardContent';
 import Header from './Header';
 import { Check, X } from 'lucide-react';
 
-export default function TutorDashboard({ onNavigateToLanding }) {
+export default function TutorDashboard({ onNavigateToLanding, user }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('deck'); // 'deck' | 'attendance' | 'schedule' | 'interventions'
+  const [activeTab, setActiveTab] = useState('copilot'); // 'copilot' | 'deck' | 'attendance' | 'schedule' | 'interventions'
   const [toast, setToast] = useState({ show: false, message: '' });
 
   const showNotification = (message) => {
@@ -26,6 +27,7 @@ export default function TutorDashboard({ onNavigateToLanding }) {
         role="trainer"
         onRoleChange={() => {}}
         onNavigateToLanding={onNavigateToLanding}
+        user={user}
       />
 
       {/* 2. Tutor Collapsible Sidebar */}
@@ -44,6 +46,15 @@ export default function TutorDashboard({ onNavigateToLanding }) {
         }`}
       >
         <main className="w-full min-h-screen pt-20 px-4 sm:px-8 py-6">
+          {activeTab === 'copilot' && (
+            <Dashboardcontent
+              role={user?.role || user?.user_role || 'tutor'}
+              isTrainer
+              user={user}
+              onShowToast={showNotification}
+            />
+          )}
+
           {activeTab === 'deck' && (
             <TutorDeck onShowToast={showNotification} />
           )}

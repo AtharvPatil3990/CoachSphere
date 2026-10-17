@@ -7,7 +7,7 @@ import StudentDoubts from './StudentDoubts';
 import Header from './Header';
 import { Check, X } from 'lucide-react';
 
-export default function StudentPortal({ onLogout, onNavigateToLanding, onSwitchRole = () => {} }) {
+export default function StudentPortal({ onLogout, onNavigateToLanding, onSwitchRole = () => {}, user }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('hub'); // 'hub' | 'schedule' | 'fees' | 'doubts'
   const [toast, setToast] = useState({ show: false, message: '' });
@@ -28,6 +28,7 @@ export default function StudentPortal({ onLogout, onNavigateToLanding, onSwitchR
         role="student"
         onRoleChange={onSwitchRole}
         onNavigateToLanding={logoutHandler}
+        user={user}
       />
 
       {/* 2. Student Collapsible Sidebar */}

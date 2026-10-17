@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import {
   Brain,
+  UserPlus,
+  Building2,
   Calendar,
   Users,
   Wallet,
@@ -34,6 +36,18 @@ export default function Sidebar({
       label: 'Copilot Center',
       sub: 'SQL Inspect & HITL Approvals',
       icon: Brain
+    },
+    {
+      id: 'institute-setup',
+      label: 'Institute Setup',
+      sub: 'Branches, Courses & Batches',
+      icon: Building2
+    },
+    {
+      id: 'invitations',
+      label: 'Invite Members',
+      sub: 'Students & Tutors',
+      icon: UserPlus
     },
     {
       id: 'timetable',

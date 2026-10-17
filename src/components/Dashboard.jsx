@@ -7,18 +7,26 @@ import Attendance from './Attendance';
 import FeeReconcile from './FeeReconcile'
 import RiskRadarCertificate from './RiskRadarCertificate'
 import TutorDashboard from './TutorDashboard'
+import MemberInvitations from './MemberInvitations';
+import InstituteSetup from './InstituteSetup';
 
-export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding }) {
+export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding, user }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [role, setRole] = useState(initialRole);
   
   // 1. Tab state: matches the 'id' in Sidebar.jsx navItems
   const [activeTab, setActiveTab] = useState('copilot');
+  const [toast, setToast] = useState('');
+  const showNotification = (message) => {
+    setToast(message);
+    window.setTimeout(() => setToast(''), 4000);
+  };
     if (role === 'trainer') {
     return (
       <TutorDashboard
         onNavigateToLanding={onNavigateToLanding}
         onSwitchRole={(newRole) => setRole(newRole)}
+        user={user}
       />
     );
   }
@@ -28,6 +36,7 @@ export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding
         role={role}
         onRoleChange={setRole}
         onNavigateToLanding={onNavigateToLanding}
+        user={user}
       />
 
       {/* 2. Pass activeTab and onSelectTab to Sidebar */}
@@ -48,35 +57,55 @@ export default function Dashboard({ initialRole = 'trainer', onNavigateToLanding
               role={role}
               isTrainer={role === 'trainer'}
               onRoleChange={setRole}
+              user={user}
+              onShowToast={showNotification}
             />
           )}
 
           {/* TAB 2: Timetable & Rescheduler */}
+          {activeTab === 'invitations' && (
+            <MemberInvitations
+              onShowToast={showNotification}
+            />
+          )}
+
+          {activeTab === 'institute-setup' && (
+            <InstituteSetup onShowToast={showNotification} />
+          )}
+
+          {/* TAB 3: Timetable & Rescheduler */}
           {activeTab === 'timetable' && (
             <TimetableRescheduler
-              onShowToast={(msg) => console.log(msg)}
+              onShowToast={showNotification}
             />
           )}
 
           {/* TAB 3: Batches & Attendance */}
           {activeTab === 'attendance' && (
             <Attendance 
-                onShowToast={(msg) => console.log(msg)} />
+                onShowToast={showNotification} />
             )}
 
           {/* TAB 4: Fees & Auto-Reconcile */}
           {activeTab === 'fees' && (
             <FeeReconcile 
-                onShowToast={(msg) => console.log(msg)} />
+                onShowToast={showNotification} />
             )}
 
           {/* TAB 5: Risk Radar & Certificates */}
           {activeTab === 'risk' && (
             <RiskRadarCertificate 
-                onShowToast={(msg) => console.log(msg)} />
+                onShowToast={showNotification} />
             )}
 
         </main>
+      </div>
+      <div
+        className={`fixed bottom-5 right-4 z-50 max-w-[calc(100vw-2rem)] rounded-xl bg-[#091426] px-4 py-3 text-xs text-white shadow-xl transition-all ${
+          toast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'
+        }`}
+      >
+        {toast}
       </div>
     </div>
   );

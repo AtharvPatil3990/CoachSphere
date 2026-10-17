@@ -1,7 +1,16 @@
 import React from 'react';
 import { Search, Bell } from 'lucide-react';
 
-export default function Header({ role, onRoleChange, onNotify }) {
+export default function Header({ role, onRoleChange, onNotify, user }) {
+  const displayName = user?.full_name || user?.name || user?.email || 'User';
+  const displayRole = user?.role || user?.user_role || role || 'User';
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('');
+
   return (
     <header className="fixed top-0 left-0 right-0 h-16 z-50 bg-white/95 backdrop-blur-md border-b border-[#e5eeff] shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="w-full h-16 px-6 flex items-center justify-between gap-4">
@@ -62,11 +71,11 @@ export default function Header({ role, onRoleChange, onNotify }) {
 
           <div className="flex items-center gap-2 pl-1.5 py-1 pr-3 rounded-xl bg-[#eff4ff]">
             <div className="w-8 h-8 rounded-full bg-[#1e293b] text-white flex items-center justify-center font-bold text-xs">
-              AS
+              {initials || 'U'}
             </div>
             <div className="hidden sm:flex flex-col">
-              <span className="text-xs font-semibold text-[#0b1c30] leading-tight">Ananya Sharma</span>
-              <span className="text-[10px] text-[#45474c]">Operations Director</span>
+              <span className="text-xs font-semibold text-[#0b1c30] leading-tight">{displayName}</span>
+              <span className="text-[10px] text-[#45474c]">{displayRole}</span>
             </div>
           </div>
         </div>
