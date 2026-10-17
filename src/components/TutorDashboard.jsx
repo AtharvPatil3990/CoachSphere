@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TutorSidebar from './TutorSidebar';
 import TutorDeck from './TutorDesk';
-import TutorAttendance from './TutorAttendance';
+import TutorAttendance from './tutorAttendance';
 import TutorSchedule from './TutorSchedule';
 import TutorInterventions from './TutorInterventions';
 import Dashboardcontent from './DashboardContent';

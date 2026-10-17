@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import Dashboardcontent from './Dashboardcontent';
+import Dashboardcontent from './DashboardContent';
 import TimetableRescheduler from './TimetableRescheduler';
 import Attendance from './Attendance';
 import FeeReconcile from './FeeReconcile'
